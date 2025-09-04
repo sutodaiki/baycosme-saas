@@ -1,246 +1,254 @@
-<div class="admin-dashboard">
-  <div class="admin-header">
-    <h1>🏢 OEM管理ダッシュボード</h1>
-    <p class="subtitle">化粧品OEM事業の管理・分析システム</p>
-    <div class="admin-actions">
-      <%= link_to "ログアウト", destroy_admin_session_path, data: { method: :delete }, class: "btn btn-secondary" %>
+<div class="page-header">
+  <h1 class="page-title">📊 ダッシュボード</h1>
+  <p class="page-description">システム全体の概要と最新の活動状況</p>
+</div>
+
+<!-- KPI カード -->
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-icon">🏢</div>
+    <div class="kpi-content">
+      <div class="kpi-value"><%= @total_companies %></div>
+      <div class="kpi-label">登録企業数</div>
+      <div class="kpi-detail">アクティブ: <%= @active_companies %>社</div>
     </div>
   </div>
 
-  <!-- KPI Overview -->
-  <div class="kpi-grid">
-    <div class="dashboard-widget">
-      <div class="widget-header">
-        <h3 class="widget-title">総登録企業数</h3>
-      </div>
-      <div class="widget-content">
-        <div class="metric-value"><%= @total_companies %></div>
-        <div class="metric-label">クライアント企業</div>
-        <div class="metric-change positive">
-          <span>📈</span> アクティブ: <%= @active_companies %>社
-        </div>
-      </div>
-    </div>
-
-    <div class="dashboard-widget">
-      <div class="widget-header">
-        <h3 class="widget-title">総ユーザー数</h3>
-      </div>
-      <div class="widget-content">
-        <div class="metric-value"><%= @total_users %></div>
-        <div class="metric-label">システム利用者</div>
-        <div class="metric-change info">
-          <span>👥</span> 企画担当者
-        </div>
-      </div>
-    </div>
-
-    <div class="dashboard-widget">
-      <div class="widget-header">
-        <h3 class="widget-title">総処方開発数</h3>
-      </div>
-      <div class="widget-content">
-        <div class="metric-value"><%= @total_formulations %></div>
-        <div class="metric-label">AI処方生成</div>
-        <div class="metric-change positive">
-          <span>🧪</span> 今月: <%= @monthly_formulations %>件
-        </div>
-      </div>
+  <div class="kpi-card">
+    <div class="kpi-icon">👥</div>
+    <div class="kpi-content">
+      <div class="kpi-value"><%= @total_users %></div>
+      <div class="kpi-label">総ユーザー数</div>
+      <div class="kpi-detail">システム利用者</div>
     </div>
   </div>
 
-  <!-- Recent Activity -->
-  <div class="admin-content">
-    <div class="admin-section">
-      <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">🏢 最近登録された企業</h3>
-        </div>
-        <div class="card-content">
-          <% if @recent_companies.any? %>
-            <div class="table-responsive">
-              <table class="admin-table">
-                <thead>
-                  <tr>
-                    <th>会社名</th>
-                    <th>住所</th>
-                    <th>従業員数</th>
-                    <th>プラン</th>
-                    <th>ステータス</th>
-                    <th>登録日</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <% @recent_companies.each do |company| %>
-                    <tr>
-                      <td><strong><%= company.name %></strong></td>
-                      <td><%= truncate(company.address, length: 40) %></td>
-                      <td><%= company.employee_count %>人</td>
-                      <td>
-                        <span class="status-badge status-info">
-                          <%= company.plan_name %>
-                        </span>
-                      </td>
-                      <td>
-                        <span class="status-badge <%= company.active? ? 'status-success' : 'status-warning' %>">
-                          <%= company.status_name %>
-                        </span>
-                      </td>
-                      <td><%= company.created_at.strftime("%Y/%m/%d") %></td>
-                    </tr>
-                  <% end %>
-                </tbody>
-              </table>
-            </div>
-          <% else %>
-            <p class="empty-message">まだ企業の登録がありません。</p>
-          <% end %>
-        </div>
-      </div>
+  <div class="kpi-card">
+    <div class="kpi-icon">⚗️</div>
+    <div class="kpi-content">
+      <div class="kpi-value"><%= @total_formulations %></div>
+      <div class="kpi-label">処方開発数</div>
+      <div class="kpi-detail">今月: <%= @monthly_formulations %>件</div>
     </div>
+  </div>
+</div>
 
-    <div class="admin-section">
-      <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">🧪 最近の処方開発活動</h3>
+<!-- コンテンツグリッド -->
+<div class="content-grid">
+  <!-- 最近の企業登録 -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">🏢 最近登録された企業</h3>
+      <%= link_to "すべて見る", admin_companies_path, class: "btn btn-outline btn-sm" %>
+    </div>
+    <div class="card-content">
+      <% if @recent_companies.any? %>
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>会社名</th>
+                <th>プラン</th>
+                <th>ステータス</th>
+                <th>登録日</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @recent_companies.each do |company| %>
+                <tr>
+                  <td>
+                    <div class="company-cell">
+                      <strong><%= company.name %></strong>
+                      <small class="text-muted"><%= truncate(company.address, length: 40) %></small>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="status-badge status-info">
+                      <%= company.plan_name %>
+                    </span>
+                  </td>
+                  <td>
+                    <span class="status-badge <%= company.active? ? 'status-success' : 'status-warning' %>">
+                      <%= company.status_name %>
+                    </span>
+                  </td>
+                  <td><%= company.created_at.strftime("%m/%d") %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
         </div>
-        <div class="card-content">
-          <% if @recent_formulations.any? %>
-            <div class="table-responsive">
-              <table class="admin-table">
-                <thead>
-                  <tr>
-                    <th>企画者</th>
-                    <th>会社</th>
-                    <th>商品タイプ</th>
-                    <th>ターゲット</th>
-                    <th>開発日時</th>
-                    <th>ステータス</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <% @recent_formulations.each do |formulation| %>
-                    <tr>
-                      <td><%= formulation.user.display_name %></td>
-                      <td><%= formulation.user.company&.name || '未所属' %></td>
-                      <td><strong><%= formulation.product_type_name %></strong></td>
-                      <td>
-                        <%= formulation.skin_type_name %> / 
-                        <%= formulation.target_age_name %>
-                      </td>
-                      <td><%= formulation.created_at.strftime("%m/%d %H:%M") %></td>
-                      <td>
-                        <% if formulation.formulation.present? %>
-                          <span class="status-badge status-success">完了</span>
-                        <% else %>
-                          <span class="status-badge status-warning">処理中</span>
-                        <% end %>
-                      </td>
-                    </tr>
-                  <% end %>
-                </tbody>
-              </table>
-            </div>
-          <% else %>
-            <p class="empty-message">まだ処方開発の活動がありません。</p>
-          <% end %>
+      <% else %>
+        <div class="empty-state">
+          <div class="empty-icon">🏢</div>
+          <p class="empty-message">まだ企業の登録がありません</p>
         </div>
-      </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- 最近の処方開発活動 -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">⚗️ 最近の処方開発</h3>
+      <%= link_to "すべて見る", admin_formulations_path, class: "btn btn-outline btn-sm" %>
+    </div>
+    <div class="card-content">
+      <% if @recent_formulations.any? %>
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>開発者</th>
+                <th>商品タイプ</th>
+                <th>開発日時</th>
+                <th>ステータス</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @recent_formulations.each do |formulation| %>
+                <tr>
+                  <td>
+                    <div class="user-cell">
+                      <strong><%= formulation.user.display_name %></strong>
+                      <small class="text-muted"><%= formulation.user.company&.name || '未所属' %></small>
+                    </div>
+                  </td>
+                  <td><%= formulation.product_type_name %></td>
+                  <td><%= formulation.created_at.strftime("%m/%d %H:%M") %></td>
+                  <td>
+                    <% if formulation.formulation.present? %>
+                      <span class="status-badge status-success">完了</span>
+                    <% else %>
+                      <span class="status-badge status-warning">処理中</span>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="empty-state">
+          <div class="empty-icon">⚗️</div>
+          <p class="empty-message">まだ処方開発の活動がありません</p>
+        </div>
+      <% end %>
     </div>
   </div>
 </div>
 
 <style>
-.admin-dashboard {
-  padding: var(--space-6);
-  max-width: 1400px;
-  margin: 0 auto;
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
 }
 
-.admin-header {
+.kpi-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.kpi-icon {
+  font-size: 2.5rem;
+  opacity: 0.9;
+}
+
+.kpi-content {
+  flex: 1;
+}
+
+.kpi-value {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.kpi-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  opacity: 0.9;
+  margin-bottom: 0.25rem;
+}
+
+.kpi-detail {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 1.5rem;
+}
+
+.card-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: var(--space-8);
-  
-  h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 0.5rem;
-  }
-  
-  .subtitle {
-    color: var(--text-secondary);
-    margin: 0;
-  }
+  align-items: center;
 }
 
-.admin-content {
+.btn-sm {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.company-cell,
+.user-cell {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: 0.125rem;
 }
 
-.admin-section {
-  width: 100%;
+.text-muted {
+  color: #6b7280;
+  font-size: 0.75rem;
 }
 
-.admin-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: var(--space-2);
-  
-  th, td {
-    padding: var(--space-3);
-    text-align: left;
-    border-bottom: 1px solid var(--border-light);
-  }
-  
-  th {
-    background-color: var(--bg-secondary);
-    font-weight: 600;
-    color: var(--text-primary);
-    font-size: 14px;
-  }
-  
-  td {
-    font-size: 14px;
-    color: var(--text-primary);
-  }
-  
-  tr:hover {
-    background-color: var(--bg-secondary);
-  }
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #9ca3af;
 }
 
-.table-responsive {
-  overflow-x: auto;
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
 }
 
 .empty-message {
-  text-align: center;
-  color: var(--text-secondary);
-  font-style: italic;
-  padding: var(--space-6);
+  font-size: 0.875rem;
+  margin: 0;
 }
 
 @media (max-width: 768px) {
-  .admin-header {
-    flex-direction: column;
-    gap: var(--space-4);
-  }
-  
   .kpi-grid {
     grid-template-columns: 1fr;
   }
   
-  .admin-table {
-    font-size: 12px;
-    
-    th, td {
-      padding: var(--space-2);
-    }
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .kpi-card {
+    padding: 1rem;
+  }
+  
+  .kpi-icon {
+    font-size: 2rem;
+  }
+  
+  .kpi-value {
+    font-size: 1.5rem;
   }
 }
 </style>

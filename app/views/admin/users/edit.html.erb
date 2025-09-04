@@ -1,0 +1,158 @@
+<div class="page-header">
+  <h1 class="page-title">✏️ ユーザー編集</h1>
+  <p class="page-description"><%= @user.display_name %>の情報を編集</p>
+</div>
+
+<div class="card">
+  <div class="card-content">
+    <%= form_with model: [:admin, @user], local: true, class: "edit-user-form" do |f| %>
+      <% if @user.errors.any? %>
+        <div class="error-messages">
+          <h4><%= pluralize(@user.errors.count, "error") %> prohibited this user from being saved:</h4>
+          <ul>
+            <% @user.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <%= f.label :name, "名前", class: "form-label" %>
+          <%= f.text_field :name, class: "form-control", placeholder: "ユーザー名を入力" %>
+        </div>
+
+        <div class="form-group">
+          <%= f.label :email, "メールアドレス", class: "form-label" %>
+          <%= f.email_field :email, class: "form-control", placeholder: "email@example.com" %>
+        </div>
+
+        <div class="form-group">
+          <%= f.label :role, "ロール", class: "form-label" %>
+          <%= f.select :role, 
+              options_for_select(User::ROLES, @user.role), 
+              {}, { class: "form-control" } %>
+        </div>
+
+        <div class="form-group">
+          <%= f.label :company_id, "所属企業", class: "form-label" %>
+          <%= f.select :company_id, 
+              options_for_select([['未所属', nil]] + @companies.map { |c| [c.name, c.id] }, @user.company_id), 
+              {}, { class: "form-control" } %>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <%= f.submit "更新", class: "btn btn-primary" %>
+        <%= link_to "キャンセル", admin_user_path(@user), class: "btn btn-outline" %>
+        <%= link_to "削除", admin_user_path(@user), method: :delete, 
+            confirm: "このユーザーを削除してもよろしいですか？", 
+            class: "btn btn-outline btn-danger" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<style>
+.edit-user-form {
+  max-width: 600px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group:nth-child(1),
+.form-group:nth-child(2) {
+  grid-column: span 1;
+}
+
+.form-group:nth-child(3),
+.form-group:nth-child(4) {
+  grid-column: span 1;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.form-control {
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.error-messages {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.error-messages h4 {
+  color: #dc2626;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.error-messages ul {
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.btn-danger {
+  color: #dc2626;
+  border-color: #dc2626;
+  margin-left: auto;
+}
+
+.btn-danger:hover {
+  background-color: #dc2626;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .btn-danger {
+    margin-left: 0;
+  }
+}
+</style>

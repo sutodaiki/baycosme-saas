@@ -1,0 +1,435 @@
+<div class="page-header">
+  <h1 class="page-title">🏢 企業詳細</h1>
+  <p class="page-description"><%= @company.name %>の詳細情報と活動状況</p>
+</div>
+
+<div class="content-grid">
+  <!-- 企業基本情報 -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">基本情報</h3>
+      <%= link_to "編集", edit_admin_company_path(@company), class: "btn btn-outline" %>
+    </div>
+    <div class="card-content">
+      <div class="info-grid">
+        <div class="info-item">
+          <label>企業名</label>
+          <div><%= @company.name %></div>
+        </div>
+        <div class="info-item">
+          <label>プラン</label>
+          <div>
+            <span class="plan-badge plan-<%= @company.plan %>">
+              <%= @company.plan_name %>
+            </span>
+          </div>
+        </div>
+        <div class="info-item">
+          <label>ステータス</label>
+          <div>
+            <span class="status-badge <%= 
+              case @company.status
+              when 'active' then 'status-success'
+              when 'suspended' then 'status-warning'
+              when 'deleted' then 'status-danger'
+              else 'status-info'
+              end
+            %>">
+              <%= @company.status_name %>
+            </span>
+          </div>
+        </div>
+        <div class="info-item">
+          <label>業界</label>
+          <div>未設定</div>
+        </div>
+        <div class="info-item">
+          <label>従業員数</label>
+          <div><%= @company.employee_count.present? ? "#{@company.employee_count}人" : '未設定' %></div>
+        </div>
+        <div class="info-item">
+          <label>ウェブサイト</label>
+          <div>
+            <% if @company.website.present? %>
+              <%= link_to @company.website, @company.website, target: "_blank", class: "website-link" %>
+            <% else %>
+              <span class="text-muted">未設定</span>
+            <% end %>
+          </div>
+        </div>
+        <div class="info-item">
+          <label>電話番号</label>
+          <div><%= @company.phone.present? ? @company.phone : '未設定' %></div>
+        </div>
+        <div class="info-item">
+          <label>設立日</label>
+          <div><%= @company.created_at.strftime("%Y年%m月%d日") %></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 活動統計 -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">活動統計</h3>
+    </div>
+    <div class="card-content">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value"><%= @company.users.count %></div>
+          <div class="stat-label">総ユーザー数</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value"><%= @company.admin_users.count %></div>
+          <div class="stat-label">管理者</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value"><%= @company.total_formulations %></div>
+          <div class="stat-label">総処方数</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value"><%= @company.sample_orders.count %></div>
+          <div class="stat-label">サンプル注文数</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 所属ユーザー一覧 -->
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">所属ユーザー</h3>
+  </div>
+  <div class="card-content">
+    <% if @company.users.any? %>
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ユーザー名</th>
+              <th>メールアドレス</th>
+              <th>ロール</th>
+              <th>処方数</th>
+              <th>最終処方</th>
+              <th>登録日</th>
+              <th>アクション</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @company.users.includes(:cosmetic_formulations).each do |user| %>
+              <tr>
+                <td>
+                  <%= link_to user.display_name, admin_user_path(user), class: "user-link" %>
+                </td>
+                <td><%= user.email %></td>
+                <td>
+                  <span class="role-badge role-<%= user.role %>">
+                    <%= user.role_name %>
+                  </span>
+                </td>
+                <td class="formulations-cell">
+                  <strong><%= user.cosmetic_formulations.count %></strong>件
+                </td>
+                <td>
+                  <% last_formulation = user.cosmetic_formulations.order(created_at: :desc).first %>
+                  <% if last_formulation %>
+                    <%= time_ago_in_words(last_formulation.created_at) %>前
+                  <% else %>
+                    <span class="text-muted">なし</span>
+                  <% end %>
+                </td>
+                <td><%= user.created_at.strftime("%Y/%m/%d") %></td>
+                <td>
+                  <%= link_to "詳細", admin_user_path(user), class: "btn btn-sm btn-outline" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="empty-state">
+        <div class="empty-icon">👥</div>
+        <h4>所属ユーザーなし</h4>
+        <p class="empty-message">この企業にはまだユーザーが所属していません。</p>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- 最近のサンプル注文 -->
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">最近のサンプル注文</h3>
+  </div>
+  <div class="card-content">
+    <% recent_orders = @company.sample_orders.includes(:user, :cosmetic_formulation).order(created_at: :desc).limit(10) %>
+    <% if recent_orders.any? %>
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>注文ID</th>
+              <th>担当者</th>
+              <th>商品タイプ</th>
+              <th>数量</th>
+              <th>優先度</th>
+              <th>ステータス</th>
+              <th>注文日</th>
+              <th>アクション</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% recent_orders.each do |order| %>
+              <tr>
+                <td>
+                  <%= link_to "##{order.id}", admin_sample_order_path(order), class: "order-link" %>
+                </td>
+                <td><%= order.contact_name %></td>
+                <td><%= order.cosmetic_formulation.product_type_name %></td>
+                <td><%= order.quantity %>個</td>
+                <td>
+                  <span class="priority-badge priority-<%= order.priority %>">
+                    <%= order.priority_name %>
+                  </span>
+                </td>
+                <td>
+                  <span class="status-badge <%= 
+                    case order.status
+                    when 'pending' then 'status-warning'
+                    when 'manufacturing', 'quality_check', 'preparing_shipment' then 'status-info'
+                    when 'shipped', 'delivered' then 'status-success'
+                    when 'cancelled' then 'status-danger'
+                    else 'status-info'
+                    end
+                  %>">
+                    <%= order.status_name %>
+                  </span>
+                </td>
+                <td><%= order.created_at.strftime("%m/%d %H:%M") %></td>
+                <td>
+                  <%= link_to "詳細", admin_sample_order_path(order), class: "btn btn-sm btn-outline" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="empty-state">
+        <div class="empty-icon">🧪</div>
+        <h4>サンプル注文なし</h4>
+        <p class="empty-message">この企業からのサンプル注文はまだありません。</p>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<style>
+.content-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.info-item label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.info-item div {
+  font-size: 0.875rem;
+  color: #1f2937;
+}
+
+.plan-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.plan-basic {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.plan-professional {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.plan-enterprise {
+  background-color: #f3e8ff;
+  color: #7c2d12;
+}
+
+.website-link {
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.website-link:hover {
+  text-decoration: underline;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 0.5rem;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.user-link {
+  color: #3b82f6;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.user-link:hover {
+  text-decoration: underline;
+}
+
+.role-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.role-admin {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.role-member {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.formulations-cell {
+  text-align: center;
+}
+
+.order-link {
+  color: #3b82f6;
+  text-decoration: none;
+  font-family: monospace;
+  font-size: 0.875rem;
+}
+
+.order-link:hover {
+  text-decoration: underline;
+}
+
+.priority-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.priority-normal {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.priority-high {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.priority-urgent {
+  background-color: #fee2e2;
+  color: #991b1b;
+  font-weight: 600;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.empty-message {
+  color: #6b7280;
+  margin: 0;
+}
+
+.btn-sm {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+@media (max-width: 1024px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-table {
+    font-size: 0.75rem;
+  }
+  
+  .admin-table th,
+  .admin-table td {
+    padding: 0.5rem;
+  }
+}
+</style>

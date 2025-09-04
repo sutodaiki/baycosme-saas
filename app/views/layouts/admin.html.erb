@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>管理画面 | BaycosmeSaas</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    
+    <%= stylesheet_link_tag 'application', 'data-turbolinks-track': 'reload' %>
+  </head>
+
+  <body class="admin-layout">
+    <!-- サイドバー -->
+    <nav class="admin-sidebar">
+      <div class="sidebar-header">
+        <h2 class="sidebar-title">🏢 OEM管理</h2>
+        <p class="sidebar-subtitle">Admin Panel</p>
+      </div>
+      
+      <div class="sidebar-menu">
+        <ul class="menu-list">
+          <li class="menu-item">
+            <%= link_to admin_dashboard_path, class: "menu-link #{'active' if current_page?(admin_dashboard_path)}" do %>
+              <span class="menu-icon">📊</span>
+              <span class="menu-text">ダッシュボード</span>
+            <% end %>
+          </li>
+          
+          <li class="menu-item">
+            <%= link_to admin_companies_path, class: "menu-link #{'active' if controller_name == 'companies'}" do %>
+              <span class="menu-icon">🏢</span>
+              <span class="menu-text">クライアント企業</span>
+            <% end %>
+          </li>
+          
+          <li class="menu-item">
+            <%= link_to admin_users_path, class: "menu-link #{'active' if controller_name == 'users'}" do %>
+              <span class="menu-icon">👥</span>
+              <span class="menu-text">ユーザー管理</span>
+            <% end %>
+          </li>
+          
+          <li class="menu-item">
+            <%= link_to admin_sample_orders_path, class: "menu-link #{'active' if controller_name == 'sample_orders'}" do %>
+              <span class="menu-icon">🧪</span>
+              <span class="menu-text">サンプル注文</span>
+            <% end %>
+          </li>
+          
+          <li class="menu-item">
+            <%= link_to admin_formulations_path, class: "menu-link #{'active' if controller_name == 'formulations'}" do %>
+              <span class="menu-icon">⚗️</span>
+              <span class="menu-text">処方管理</span>
+            <% end %>
+          </li>
+        </ul>
+        
+        <div class="sidebar-footer">
+          <div class="admin-info">
+            <p class="admin-name"><%= current_admin&.email || 'Admin' %></p>
+            <p class="admin-role">システム管理者</p>
+          </div>
+          
+          <a href="#" onclick="adminLogout(); return false;" class="logout-btn">
+            <span>🚪</span> ログアウト
+          </a>
+          
+          <script>
+          function adminLogout() {
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '<%= destroy_admin_session_path %>';
+            
+            var methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'DELETE';
+            form.appendChild(methodInput);
+            
+            var tokenInput = document.createElement('input');
+            tokenInput.type = 'hidden';
+            tokenInput.name = 'authenticity_token';
+            tokenInput.value = '<%= form_authenticity_token %>';
+            form.appendChild(tokenInput);
+            
+            document.body.appendChild(form);
+            form.submit();
+          }
+          </script>
+        </div>
+      </div>
+    </nav>
+
+    <!-- フラッシュメッセージ -->
+    <%= render 'shared/flash_messages' %>
+
+    <!-- メインコンテンツエリア -->
+    <main class="admin-main">
+      <div class="admin-content">
+        <%= yield %>
+      </div>
+    </main>
+  </body>
+</html>
+
+<style>
+/* 管理画面レイアウト */
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f8fafc;
+  font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+}
+
+/* サイドバー */
+.admin-sidebar {
+  width: 280px;
+  background: linear-gradient(180deg, #1e293b 0%, #334155 100%);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  height: 100vh;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-header {
+  padding: 2rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem 0;
+  color: #f1f5f9;
+}
+
+.sidebar-subtitle {
+  font-size: 0.875rem;
+  margin: 0;
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.sidebar-menu {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 0;
+}
+
+.menu-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex: 1;
+}
+
+.menu-item {
+  margin: 0;
+}
+
+.menu-link {
+  display: flex;
+  align-items: center;
+  padding: 0.875rem 1.5rem;
+  color: #cbd5e1;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-left: 3px solid transparent;
+}
+
+.menu-link:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #f1f5f9;
+  border-left-color: #3b82f6;
+}
+
+.menu-link.active {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+  border-left-color: #3b82f6;
+}
+
+.menu-icon {
+  font-size: 1.125rem;
+  margin-right: 0.75rem;
+  width: 20px;
+  text-align: center;
+}
+
+.menu-text {
+  font-weight: 500;
+}
+
+.sidebar-footer {
+  padding: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-info {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+  color: #f1f5f9;
+}
+
+.admin-role {
+  font-size: 0.75rem;
+  margin: 0;
+  color: #94a3b8;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  padding: 0.5rem;
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+  text-decoration: none;
+  border: none;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  gap: 0.5rem;
+}
+
+.logout-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+/* メインコンテンツ */
+.admin-main {
+  flex: 1;
+  margin-left: 280px;
+  min-height: 100vh;
+}
+
+.admin-content {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 1024px) {
+  .admin-sidebar {
+    width: 260px;
+  }
+  
+  .admin-main {
+    margin-left: 260px;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-sidebar {
+    width: 100%;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .admin-sidebar.open {
+    transform: translateX(0);
+  }
+  
+  .admin-main {
+    margin-left: 0;
+  }
+  
+  .admin-content {
+    padding: 1rem;
+  }
+}
+
+/* 共通コンポーネント */
+.page-header {
+  margin-bottom: 2rem;
+}
+
+.page-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 0.5rem 0;
+}
+
+.page-description {
+  color: #64748b;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.card {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+}
+
+.card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.card-content {
+  padding: 1.5rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background-color: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+.btn-primary:hover {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.btn-secondary {
+  background-color: #6b7280;
+  color: white;
+  border-color: #6b7280;
+}
+
+.btn-secondary:hover {
+  background-color: #4b5563;
+  border-color: #4b5563;
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.btn-outline:hover {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.search-form {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.form-control {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.table-responsive {
+  overflow-x: auto;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.admin-table th {
+  background-color: #f8fafc;
+  padding: 1rem;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-table td {
+  padding: 1rem;
+  font-size: 0.875rem;
+  color: #1f2937;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.admin-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.status-success {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.status-warning {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.status-danger {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.status-info {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.pagination a,
+.pagination span {
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  color: #374151;
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+
+.pagination a:hover {
+  background-color: #f9fafb;
+}
+
+.pagination .current {
+  background-color: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+</style>

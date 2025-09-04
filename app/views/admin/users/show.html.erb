@@ -1,0 +1,281 @@
+<div class="page-header">
+  <h1 class="page-title">👤 ユーザー詳細</h1>
+  <p class="page-description"><%= @user.display_name %>の詳細情報</p>
+</div>
+
+<div class="content-grid">
+  <!-- ユーザー基本情報 -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">基本情報</h3>
+      <%= link_to "編集", edit_admin_user_path(@user), class: "btn btn-outline" %>
+    </div>
+    <div class="card-content">
+      <div class="info-grid">
+        <div class="info-item">
+          <label>名前</label>
+          <div><%= @user.display_name %></div>
+        </div>
+        <div class="info-item">
+          <label>メールアドレス</label>
+          <div><%= @user.email %></div>
+        </div>
+        <div class="info-item">
+          <label>ロール</label>
+          <div>
+            <span class="role-badge role-<%= @user.role %>">
+              <%= @user.role_name %>
+            </span>
+          </div>
+        </div>
+        <div class="info-item">
+          <label>所属企業</label>
+          <div>
+            <% if @user.company %>
+              <%= link_to @user.company.name, admin_company_path(@user.company), class: "company-link" %>
+              <small class="text-muted">(<%= @user.company.plan_name %>)</small>
+            <% else %>
+              <span class="text-muted">未所属</span>
+            <% end %>
+          </div>
+        </div>
+        <div class="info-item">
+          <label>登録日</label>
+          <div><%= @user.created_at.strftime("%Y年%m月%d日") %></div>
+        </div>
+        <div class="info-item">
+          <label>プロフィール完成度</label>
+          <div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: <%= @user.profile_completion_percentage %>%"></div>
+            </div>
+            <small><%= @user.profile_completion_percentage %>%</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 活動統計 -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">活動統計</h3>
+    </div>
+    <div class="card-content">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value"><%= @user.cosmetic_formulations.count %></div>
+          <div class="stat-label">総処方数</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value"><%= @user.formulations_this_month %></div>
+          <div class="stat-label">今月の処方数</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value"><%= @user.sample_orders.count %></div>
+          <div class="stat-label">サンプル注文数</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value"><%= @user.favorite_product_type %></div>
+          <div class="stat-label">好みの商品タイプ</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 最近の処方開発 -->
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">最近の処方開発</h3>
+  </div>
+  <div class="card-content">
+    <% if @recent_formulations.any? %>
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>商品タイプ</th>
+              <th>対象・肌タイプ</th>
+              <th>悩み</th>
+              <th>ステータス</th>
+              <th>作成日</th>
+              <th>アクション</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @recent_formulations.each do |formulation| %>
+              <tr>
+                <td><%= formulation.product_type_name %></td>
+                <td>
+                  <div>
+                    <%= formulation.target_age_name %>
+                    <small class="text-muted d-block"><%= formulation.skin_type_name %></small>
+                  </div>
+                </td>
+                <td><%= truncate(formulation.concerns_name, length: 30) %></td>
+                <td>
+                  <% if formulation.formulation.present? %>
+                    <span class="status-badge status-success">完了</span>
+                  <% else %>
+                    <span class="status-badge status-warning">処理中</span>
+                  <% end %>
+                </td>
+                <td><%= formulation.created_at.strftime("%m/%d %H:%M") %></td>
+                <td>
+                  <%= link_to "詳細", admin_formulation_path(formulation), class: "btn btn-sm btn-outline" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="empty-state">
+        <div class="empty-icon">⚗️</div>
+        <p class="empty-message">まだ処方開発の活動がありません。</p>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<style>
+.content-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.info-item label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.info-item div {
+  font-size: 0.875rem;
+  color: #1f2937;
+}
+
+.role-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.role-admin {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.role-member {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.company-link {
+  color: #3b82f6;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.company-link:hover {
+  text-decoration: underline;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.25rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  transition: width 0.3s ease;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 0.5rem;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-message {
+  color: #6b7280;
+  margin: 0;
+}
+
+@media (max-width: 1024px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-table {
+    font-size: 0.75rem;
+  }
+  
+  .admin-table th,
+  .admin-table td {
+    padding: 0.5rem;
+  }
+}
+</style>

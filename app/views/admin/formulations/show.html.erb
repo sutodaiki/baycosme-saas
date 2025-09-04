@@ -1,0 +1,383 @@
+<div class="page-header">
+  <h1 class="page-title">⚗️ 処方詳細</h1>
+  <p class="page-description"><%= @formulation.product_type_name %>の処方データ</p>
+</div>
+
+<div class="content-grid">
+  <!-- 処方基本情報 -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">基本情報</h3>
+    </div>
+    <div class="card-content">
+      <div class="info-grid">
+        <div class="info-item">
+          <label>開発者</label>
+          <div>
+            <%= link_to @formulation.user.display_name, admin_user_path(@formulation.user), class: "user-link" %>
+          </div>
+        </div>
+        <div class="info-item">
+          <label>所属企業</label>
+          <div>
+            <% if @formulation.user.company %>
+              <%= link_to @formulation.user.company.name, admin_company_path(@formulation.user.company), class: "company-link" %>
+            <% else %>
+              <span class="text-muted">未所属</span>
+            <% end %>
+          </div>
+        </div>
+        <div class="info-item">
+          <label>商品タイプ</label>
+          <div>
+            <span class="product-type-badge">
+              <%= @formulation.product_type_name %>
+            </span>
+          </div>
+        </div>
+        <div class="info-item">
+          <label>対象年齢</label>
+          <div><%= @formulation.target_age_name %></div>
+        </div>
+        <div class="info-item">
+          <label>肌タイプ</label>
+          <div><%= @formulation.skin_type_name %></div>
+        </div>
+        <div class="info-item">
+          <label>悩み</label>
+          <div><%= @formulation.concerns_name %></div>
+        </div>
+        <div class="info-item">
+          <label>作成日時</label>
+          <div><%= @formulation.created_at.strftime("%Y年%m月%d日 %H:%M") %></div>
+        </div>
+        <div class="info-item">
+          <label>ステータス</label>
+          <div>
+            <% if @formulation.formulation.present? %>
+              <span class="status-badge status-success">完了</span>
+            <% else %>
+              <span class="status-badge status-warning">処理中</span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- サンプル注文統計 -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">サンプル注文統計</h3>
+    </div>
+    <div class="card-content">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value"><%= @sample_orders.count %></div>
+          <div class="stat-label">総注文数</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value"><%= @sample_orders.where(status: 'pending').count %></div>
+          <div class="stat-label">受付中</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value"><%= @sample_orders.where(status: ['shipped', 'delivered']).count %></div>
+          <div class="stat-label">完了</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">¥<%= number_with_delimiter(@sample_orders.sum(&:total_cost)) %></div>
+          <div class="stat-label">総売上</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 処方詳細 -->
+<% if @formulation.formulation.present? %>
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">AI生成処方</h3>
+    </div>
+    <div class="card-content">
+      <div class="formulation-content">
+        <%= simple_format(@formulation.formulation) %>
+      </div>
+    </div>
+  </div>
+<% else %>
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">処理状況</h3>
+    </div>
+    <div class="card-content">
+      <div class="processing-state">
+        <div class="processing-icon">🔄</div>
+        <h4>AI処方生成中</h4>
+        <p>この処方は現在AI処理中です。完了までしばらくお待ちください。</p>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<!-- サンプル注文一覧 -->
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">サンプル注文一覧</h3>
+  </div>
+  <div class="card-content">
+    <% if @sample_orders.any? %>
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>注文ID</th>
+              <th>担当者</th>
+              <th>数量</th>
+              <th>優先度</th>
+              <th>ステータス</th>
+              <th>見積金額</th>
+              <th>注文日</th>
+              <th>アクション</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @sample_orders.each do |order| %>
+              <tr>
+                <td>
+                  <%= link_to "##{order.id}", admin_sample_order_path(order), class: "order-link" %>
+                </td>
+                <td><%= order.contact_name %></td>
+                <td><%= order.quantity %>個</td>
+                <td>
+                  <span class="priority-badge priority-<%= order.priority %>">
+                    <%= order.priority_name %>
+                  </span>
+                </td>
+                <td>
+                  <span class="status-badge <%= 
+                    case order.status
+                    when 'pending' then 'status-warning'
+                    when 'manufacturing', 'quality_check', 'preparing_shipment' then 'status-info'
+                    when 'shipped', 'delivered' then 'status-success'
+                    when 'cancelled' then 'status-danger'
+                    else 'status-info'
+                    end
+                  %>">
+                    <%= order.status_name %>
+                  </span>
+                </td>
+                <td>¥<%= number_with_delimiter(order.total_cost) %></td>
+                <td><%= order.created_at.strftime("%m/%d") %></td>
+                <td>
+                  <%= link_to "詳細", admin_sample_order_path(order), class: "btn btn-sm btn-outline" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="empty-state">
+        <div class="empty-icon">🧪</div>
+        <h4>サンプル注文なし</h4>
+        <p class="empty-message">この処方にはまだサンプル注文がありません。</p>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<style>
+.content-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.info-item label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.info-item div {
+  font-size: 0.875rem;
+  color: #1f2937;
+}
+
+.user-link,
+.company-link {
+  color: #3b82f6;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.user-link:hover,
+.company-link:hover {
+  text-decoration: underline;
+}
+
+.product-type-badge {
+  padding: 0.25rem 0.75rem;
+  background-color: #dbeafe;
+  color: #1e40af;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 0.5rem;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.formulation-content {
+  background: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border-left: 4px solid #3b82f6;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.processing-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #6b7280;
+}
+
+.processing-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.processing-state h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.order-link {
+  color: #3b82f6;
+  text-decoration: none;
+  font-family: monospace;
+  font-size: 0.875rem;
+}
+
+.order-link:hover {
+  text-decoration: underline;
+}
+
+.priority-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.priority-normal {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.priority-high {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.priority-urgent {
+  background-color: #fee2e2;
+  color: #991b1b;
+  font-weight: 600;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.empty-message {
+  color: #6b7280;
+  margin: 0;
+}
+
+@media (max-width: 1024px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-table {
+    font-size: 0.75rem;
+  }
+  
+  .admin-table th,
+  .admin-table td {
+    padding: 0.5rem;
+  }
+}
+</style>

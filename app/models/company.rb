@@ -1,6 +1,7 @@
 class Company < ApplicationRecord
   has_many :users, dependent: :destroy
   has_many :cosmetic_formulations, through: :users
+  has_many :sample_orders, dependent: :destroy
   
   belongs_to :creator, class_name: 'User', foreign_key: 'created_by', optional: true
   

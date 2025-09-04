@@ -1,5 +1,6 @@
 class CosmeticFormulation < ApplicationRecord
   belongs_to :user
+  has_many :sample_orders, dependent: :destroy
   
   validates :product_type, presence: true
   validates :skin_type, presence: true
@@ -43,5 +44,9 @@ class CosmeticFormulation < ApplicationRecord
   
   def target_age_name
     TARGET_AGES.find { |name, value| value == target_age }&.first
+  end
+  
+  def concerns_name
+    concerns.present? ? concerns : '未設定'
   end
 end

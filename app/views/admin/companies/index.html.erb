@@ -1,0 +1,370 @@
+<div class="page-header">
+  <h1 class="page-title">🏢 クライアント企業管理</h1>
+  <p class="page-description">登録されている企業の一覧と詳細管理</p>
+</div>
+
+<!-- 統計情報 -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-value"><%= @stats[:total] %></div>
+    <div class="stat-label">総企業数</div>
+  </div>
+  <div class="stat-card stat-success">
+    <div class="stat-value"><%= @stats[:active] %></div>
+    <div class="stat-label">アクティブ</div>
+  </div>
+  <div class="stat-card stat-warning">
+    <div class="stat-value"><%= @stats[:suspended] %></div>
+    <div class="stat-label">停止中</div>
+  </div>
+  <div class="stat-card stat-info">
+    <div class="stat-value"><%= @stats[:basic_plan] + @stats[:professional_plan] + @stats[:enterprise_plan] %></div>
+    <div class="stat-label">有料プラン</div>
+  </div>
+</div>
+
+<!-- 検索・フィルター -->
+<div class="card search-card">
+  <div class="card-content">
+    <%= form_with url: admin_companies_path, method: :get, local: true, class: "search-form" do |f| %>
+      <div class="search-row">
+        <div class="form-group">
+          <%= f.label :search, "検索", class: "form-label" %>
+          <%= f.text_field :search, value: params[:search], placeholder: "企業名・住所で検索", class: "form-control" %>
+        </div>
+        
+        <div class="form-group">
+          <%= f.label :status, "ステータス", class: "form-label" %>
+          <%= f.select :status, 
+              options_for_select([
+                ['すべて', 'all'],
+                ['アクティブ', 'active'],
+                ['停止中', 'suspended'],
+                ['削除済み', 'deleted']
+              ], params[:status]), 
+              {}, { class: "form-control" } %>
+        </div>
+        
+        <div class="form-group">
+          <%= f.label :plan, "プラン", class: "form-label" %>
+          <%= f.select :plan, 
+              options_for_select([
+                ['すべて', 'all'],
+                ['ベーシック', 'basic'],
+                ['プロフェッショナル', 'professional'],
+                ['エンタープライズ', 'enterprise']
+              ], params[:plan]), 
+              {}, { class: "form-control" } %>
+        </div>
+        
+        <div class="form-group">
+          <%= f.label :sort, "並び順", class: "form-label" %>
+          <%= f.select :sort, 
+              options_for_select([
+                ['登録日（新しい順）', 'created_desc'],
+                ['登録日（古い順）', 'created_asc'],
+                ['企業名順', 'name'],
+                ['ユーザー数順', 'users_count']
+              ], params[:sort]), 
+              {}, { class: "form-control" } %>
+        </div>
+        
+        <div class="form-group search-actions">
+          <%= f.submit "検索", class: "btn btn-primary" %>
+          <%= link_to "リセット", admin_companies_path, class: "btn btn-outline" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- 企業一覧 -->
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">企業一覧（<%= @companies.total_count %>件）</h3>
+  </div>
+  <div class="card-content">
+    <% if @companies.any? %>
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>企業名</th>
+              <th>住所</th>
+              <th>プラン</th>
+              <th>ステータス</th>
+              <th>ユーザー数</th>
+              <th>処方数</th>
+              <th>登録日</th>
+              <th>アクション</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @companies.each do |company| %>
+              <tr>
+                <td>
+                  <div class="company-info">
+                    <strong class="company-name">
+                      <%= link_to company.name, admin_company_path(company), class: "company-link" %>
+                    </strong>
+                    <% if company.website.present? %>
+                      <div class="company-website">
+                        <%= link_to company.website, company.website, target: "_blank", class: "text-muted" %>
+                      </div>
+                    <% end %>
+                  </div>
+                </td>
+                <td>
+                  <div class="address-cell">
+                    <%= truncate(company.address, length: 40) %>
+                    <% if company.phone.present? %>
+                      <small class="text-muted d-block"><%= company.phone %></small>
+                    <% end %>
+                  </div>
+                </td>
+                <td>
+                  <span class="status-badge status-info">
+                    <%= company.plan_name %>
+                  </span>
+                </td>
+                <td>
+                  <span class="status-badge <%= 
+                    case company.status
+                    when 'active' then 'status-success'
+                    when 'suspended' then 'status-warning'
+                    when 'deleted' then 'status-danger'
+                    else 'status-info'
+                    end
+                  %>">
+                    <%= company.status_name %>
+                  </span>
+                </td>
+                <td>
+                  <div class="metric-cell">
+                    <strong><%= company.users.count %></strong>人
+                    <small class="text-muted">
+                      管理者: <%= company.admin_users.count %>
+                    </small>
+                  </div>
+                </td>
+                <td>
+                  <strong><%= company.total_formulations %></strong>件
+                </td>
+                <td>
+                  <%= company.created_at.strftime("%Y/%m/%d") %>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <%= link_to "詳細", admin_company_path(company), class: "btn btn-sm btn-outline" %>
+                    <%= link_to "編集", edit_admin_company_path(company), class: "btn btn-sm btn-outline" %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- ページネーション -->
+      <div class="pagination-wrapper">
+        <%= paginate @companies %>
+      </div>
+    <% else %>
+      <div class="empty-state">
+        <div class="empty-icon">🏢</div>
+        <h3 class="empty-title">企業が見つかりません</h3>
+        <p class="empty-message">検索条件を変更するか、新しい企業の登録をお待ちください。</p>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<style>
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #e5e7eb;
+}
+
+.stat-card.stat-success {
+  border-left-color: #10b981;
+}
+
+.stat-card.stat-warning {
+  border-left-color: #f59e0b;
+}
+
+.stat-card.stat-info {
+  border-left-color: #3b82f6;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.search-card {
+  margin-bottom: 2rem;
+}
+
+.search-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  gap: 1rem;
+  align-items: end;
+}
+
+.search-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.company-info {
+  min-width: 200px;
+}
+
+.company-name {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.company-link {
+  color: #1f2937;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.company-link:hover {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+.company-website {
+  font-size: 0.75rem;
+}
+
+.company-website a {
+  color: #6b7280;
+  text-decoration: none;
+}
+
+.company-website a:hover {
+  color: #3b82f6;
+}
+
+.address-cell {
+  max-width: 200px;
+}
+
+.metric-cell {
+  text-align: center;
+}
+
+.metric-cell strong {
+  display: block;
+  font-size: 1.125rem;
+  margin-bottom: 0.25rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.btn-sm {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.pagination-wrapper {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.empty-message {
+  color: #6b7280;
+  margin: 0;
+}
+
+@media (max-width: 1200px) {
+  .search-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .search-actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .stat-card {
+    padding: 1rem;
+  }
+  
+  .stat-value {
+    font-size: 1.5rem;
+  }
+  
+  .admin-table {
+    font-size: 0.75rem;
+  }
+  
+  .admin-table th,
+  .admin-table td {
+    padding: 0.5rem;
+  }
+  
+  .company-info,
+  .address-cell {
+    min-width: auto;
+    max-width: 150px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+}
+</style>

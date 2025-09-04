@@ -14,6 +14,10 @@ Rails.application.routes.draw do
   get '/admin', to: 'admin/home#index'
   namespace :admin do
     get 'dashboard', to: 'dashboard#index'
+    resources :companies, only: [:index, :show, :edit, :update, :destroy]
+    resources :users, only: [:index, :show, :edit, :update, :destroy]
+    resources :sample_orders, only: [:index, :show, :edit, :update, :destroy]
+    resources :formulations, only: [:index, :show, :destroy]
   end
 
   # User dashboard routes

@@ -1,0 +1,178 @@
+<% if notice %>
+  <div class="flash-message flash-notice" id="flash-notice">
+    <div class="flash-content">
+      <div class="flash-icon">✅</div>
+      <div class="flash-text"><%= notice %></div>
+      <button class="flash-close" onclick="hideFlash('flash-notice')">×</button>
+    </div>
+  </div>
+<% end %>
+
+<% if alert %>
+  <div class="flash-message flash-alert" id="flash-alert">
+    <div class="flash-content">
+      <div class="flash-icon">⚠️</div>
+      <div class="flash-text"><%= alert %></div>
+      <button class="flash-close" onclick="hideFlash('flash-alert')">×</button>
+    </div>
+  </div>
+<% end %>
+
+<% flash.each do |type, message| %>
+  <% unless ['notice', 'alert'].include?(type) %>
+    <div class="flash-message flash-<%= type %>" id="flash-<%= type %>">
+      <div class="flash-content">
+        <div class="flash-icon">
+          <% case type
+            when 'success' %>🎉
+          <% when 'error' %>❌
+          <% when 'warning' %>⚠️
+          <% else %>ℹ️
+          <% end %>
+        </div>
+        <div class="flash-text"><%= message %></div>
+        <button class="flash-close" onclick="hideFlash('flash-<%= type %>')">×</button>
+      </div>
+    </div>
+  <% end %>
+<% end %>
+
+<script>
+function hideFlash(flashId) {
+  var flash = document.getElementById(flashId);
+  if (flash) {
+    flash.style.opacity = '0';
+    flash.style.transform = 'translateY(-20px)';
+    setTimeout(function() {
+      flash.style.display = 'none';
+    }, 300);
+  }
+}
+
+// Auto-hide flash messages after 5 seconds
+document.addEventListener('DOMContentLoaded', function() {
+  var flashMessages = document.querySelectorAll('.flash-message');
+  flashMessages.forEach(function(flash) {
+    setTimeout(function() {
+      hideFlash(flash.id);
+    }, 5000);
+  });
+});
+</script>
+
+<style>
+.flash-message {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  max-width: 400px;
+  z-index: 9999;
+  animation: slideInRight 0.3s ease-out;
+  margin-bottom: 10px;
+}
+
+.flash-content {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-size: 14px;
+  font-weight: 500;
+  gap: 12px;
+  position: relative;
+}
+
+.flash-notice .flash-content {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.flash-alert .flash-content {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+}
+
+.flash-success .flash-content {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.flash-error .flash-content {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+}
+
+.flash-warning .flash-content {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+}
+
+.flash-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.flash-text {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.flash-close {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+  opacity: 0.8;
+}
+
+.flash-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  opacity: 1;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Multiple flash messages stacking */
+.flash-message:nth-child(1) { top: 20px; }
+.flash-message:nth-child(2) { top: 80px; }
+.flash-message:nth-child(3) { top: 140px; }
+.flash-message:nth-child(4) { top: 200px; }
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .flash-message {
+    left: 20px;
+    right: 20px;
+    max-width: none;
+  }
+  
+  .flash-content {
+    padding: 14px 16px;
+    font-size: 13px;
+  }
+  
+  .flash-icon {
+    font-size: 16px;
+  }
+}
+</style>
