@@ -1,0 +1,50 @@
+<div class="formulations-index">
+  <div class="page-header">
+    <h2>📚 処方履歴</h2>
+    <%= link_to "新しい処方を作成", new_cosmetic_formulation_path, class: "btn btn-primary" %>
+  </div>
+
+  <% if @formulations.any? %>
+    <div class="formulations-grid">
+      <% @formulations.each do |formulation| %>
+        <div class="formulation-card">
+          <div class="card-header">
+            <h3><%= formulation.product_type_name %></h3>
+            <span class="date"><%= formulation.created_at.strftime("%m/%d") %></span>
+          </div>
+          
+          <div class="card-content">
+            <div class="condition-tags">
+              <span class="tag skin-type"><%= formulation.skin_type_name %></span>
+              <span class="tag age-type"><%= formulation.target_age_name %></span>
+            </div>
+            
+            <div class="concerns">
+              <strong>肌悩み:</strong>
+              <p><%= truncate(formulation.concerns, length: 60) %></p>
+            </div>
+            
+            <div class="status">
+              <% if formulation.formulation.present? %>
+                <span class="status-complete">✅ 処方完了</span>
+              <% else %>
+                <span class="status-processing">⏳ 処理中</span>
+              <% end %>
+            </div>
+          </div>
+          
+          <div class="card-actions">
+            <%= link_to "詳細を見る", formulation, class: "btn btn-outline btn-small" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <div class="empty-icon">🧪</div>
+      <h3>まだ処方がありません</h3>
+      <p>最初の化粧品処方をAIに作成してもらいましょう！</p>
+      <%= link_to "処方を作成する", new_cosmetic_formulation_path, class: "btn btn-primary btn-large" %>
+    </div>
+  <% end %>
+</div>

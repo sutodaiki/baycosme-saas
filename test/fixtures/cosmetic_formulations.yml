@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  product_type: MyString
+  skin_type: MyString
+  concerns: MyText
+  target_age: MyString
+  formulation: MyText
+  ai_response: MyText
+
+two:
+  user: two
+  product_type: MyString
+  skin_type: MyString
+  concerns: MyText
+  target_age: MyString
+  formulation: MyText
+  ai_response: MyText

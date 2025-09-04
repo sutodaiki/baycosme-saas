@@ -1,0 +1,112 @@
+<div class="profile-edit-container">
+  <div class="edit-header">
+    <h2>⚙️ プロフィール設定</h2>
+    <p class="subtitle">あなたの情報を設定して、より精密な処方提案を受け取りましょう</p>
+  </div>
+
+  <%= form_with(model: @user, url: profile_path, local: true, html: { class: "profile-form" }) do |f| %>
+    <% if @user.errors.any? %>
+      <div id="error_explanation">
+        <h3><%= pluralize(@user.errors.count, "個のエラー") %>があります:</h3>
+        <ul>
+          <% @user.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="form-grid">
+      <!-- 基本情報セクション -->
+      <div class="form-section">
+        <h3>👤 基本情報</h3>
+        
+        <div class="form-group">
+          <%= f.label :name, "お名前", class: "form-label" %>
+          <%= f.text_field :name, class: "form-input", placeholder: "例：田中 太郎" %>
+        </div>
+
+        <div class="form-group">
+          <%= f.label :age, "年齢", class: "form-label" %>
+          <%= f.number_field :age, class: "form-input", placeholder: "例：25", min: 1, max: 120 %>
+        </div>
+
+        <div class="form-group">
+          <%= f.label :avatar_url, "プロフィール画像URL", class: "form-label" %>
+          <%= f.url_field :avatar_url, class: "form-input", placeholder: "https://example.com/avatar.jpg" %>
+          <small class="form-hint">画像のURLを入力してください（任意）</small>
+        </div>
+      </div>
+
+      <!-- 化粧品情報セクション -->
+      <div class="form-section">
+        <h3>🧴 化粧品情報</h3>
+        
+        <div class="form-group">
+          <%= f.label :skin_type, "肌タイプ", class: "form-label" %>
+          <div class="radio-group">
+            <% User::SKIN_TYPES.each do |name, value| %>
+              <label class="radio-option">
+                <%= f.radio_button :skin_type, value %>
+                <span class="radio-label"><%= name %></span>
+              </label>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <%= f.label :preferred_products, "好きな化粧品・ブランド", class: "form-label" %>
+          <%= f.text_area :preferred_products, 
+              class: "form-textarea", 
+              rows: 4, 
+              placeholder: "例：SK-II、資生堂、オーガニック系、韓国コスメ、プチプラコスメなど、お気に入りの化粧品やブランドを教えてください。" %>
+        </div>
+      </div>
+    </div>
+
+    <!-- 自己紹介セクション -->
+    <div class="form-section full-width">
+      <h3>📝 自己紹介</h3>
+      
+      <div class="form-group">
+        <%= f.label :bio, "自己紹介・化粧品への想い", class: "form-label" %>
+        <%= f.text_area :bio, 
+            class: "form-textarea", 
+            rows: 6, 
+            placeholder: "例：敏感肌で悩んでいるため、自然由来の成分を使った化粧品に興味があります。特にスキンケアに力を入れており、将来的には自分の肌に合ったオリジナル化粧品を作ってみたいと思っています。" %>
+        <small class="form-hint">最大500文字まで</small>
+      </div>
+    </div>
+
+    <!-- プロフィール完成度 -->
+    <div class="completion-status">
+      <h4>📊 プロフィール完成度</h4>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: <%= @user.profile_completion_percentage %>%;"></div>
+      </div>
+      <div class="progress-text">
+        <%= @user.profile_completion_percentage %>% 完成
+        <span class="completion-tip">
+          <% if @user.profile_completion_percentage < 100 %>
+            すべての項目を入力すると100%になります
+          <% else %>
+            完璧です！より精密な処方提案が可能です
+          <% end %>
+        </span>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <%= f.submit "プロフィールを更新", class: "btn btn-primary btn-large" %>
+      <%= link_to "キャンセル", mypage_path, class: "btn btn-secondary" %>
+    </div>
+  <% end %>
+
+  <!-- 危険な操作 -->
+  <div class="danger-zone">
+    <h3>⚠️ アカウント設定</h3>
+    <div class="danger-actions">
+      <%= link_to "パスワード変更", edit_user_registration_path, class: "btn btn-outline btn-small" %>
+    </div>
+  </div>
+</div>

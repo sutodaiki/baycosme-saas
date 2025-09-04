@@ -1,0 +1,187 @@
+<!-- Business Dashboard Overview -->
+<div class="dashboard-overview">
+  <div class="dashboard-header">
+    <div>
+      <h1>ようこそ、<%= @user.display_name %>さん</h1>
+      <p class="dashboard-subtitle">あなたの化粧品開発管理ダッシュボード</p>
+    </div>
+    <div class="header-actions">
+      <%= link_to "プロフィール編集", profile_edit_path, class: "btn btn-outline" %>
+      <%= link_to "新規処方作成", new_cosmetic_formulation_path, class: "btn btn-primary" %>
+    </div>
+  </div>
+</div>
+
+<!-- Key Performance Indicators -->
+<div class="kpi-grid">
+  <div class="dashboard-widget">
+    <div class="widget-header">
+      <h3 class="widget-title">総処方数</h3>
+      <a href="<%= cosmetic_formulations_path %>" class="widget-action">すべて表示</a>
+    </div>
+    <div class="widget-content">
+      <div class="metric-value"><%= @user.cosmetic_formulations.count %></div>
+      <div class="metric-label">作成済み処方</div>
+      <div class="metric-change positive">
+        <span>↗</span> +<%= @user.formulations_this_month %> 今月
+      </div>
+    </div>
+  </div>
+  
+  <div class="dashboard-widget">
+    <div class="widget-header">
+      <h3 class="widget-title">月間作成数</h3>
+      <span class="widget-action">この月</span>
+    </div>
+    <div class="widget-content">
+      <div class="metric-value"><%= @user.formulations_this_month %></div>
+      <div class="metric-label">今月の処方作成</div>
+      <div class="metric-change <%= @user.formulations_this_month > 2 ? 'positive' : 'neutral' %>">
+        <% if @user.formulations_this_month > 2 %>
+          <span>📈</span> 順調です
+        <% else %>
+          <span>📊</span> 平均的
+        <% end %>
+      </div>
+    </div>
+  </div>
+  
+  <div class="dashboard-widget">
+    <div class="widget-header">
+      <h3 class="widget-title">お気に入りタイプ</h3>
+      <span class="widget-action">分析</span>
+    </div>
+    <div class="widget-content">
+      <div class="metric-value" style="font-size: 24px;"><%= @user.favorite_product_type %></div>
+      <div class="metric-label">最も多く作成</div>
+      <div class="metric-change info">
+        <span>🔍</span> 傾向分析
+      </div>
+    </div>
+  </div>
+  
+  <div class="dashboard-widget">
+    <div class="widget-header">
+      <h3 class="widget-title">プロフィール完成度</h3>
+      <%= link_to "更新", profile_edit_path, class: "widget-action" %>
+    </div>
+    <div class="widget-content">
+      <div class="metric-value"><%= @user.profile_completion_percentage %>%</div>
+      <div class="metric-label">プロフィール情報</div>
+      <div class="completion-progress-bar">
+        <div class="progress-fill" style="width: <%= @user.profile_completion_percentage %>%;"></div>
+      </div>
+      <div class="metric-change <%= @user.profile_completion_percentage == 100 ? 'positive' : 'warning' %>">
+        <% if @user.profile_completion_percentage == 100 %>
+          <span>✅</span> 完了
+        <% else %>
+          <span>⚠️</span> 未完了項目あり
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Profile Completion Alert -->
+<% if @user.profile_completion_percentage < 100 %>
+  <div class="alert notice" style="margin-bottom: 2rem;">
+    <strong>プロフィール未完了:</strong> プロフィールを完成させて、より精密な処方提案を受けましょう。
+    <%= link_to "プロフィールを編集", profile_edit_path, class: "btn btn-primary btn-small", style: "margin-left: 1rem;" %>
+  </div>
+<% end %>
+
+<!-- User Bio Section -->
+<% if @user.bio.present? %>
+  <div class="card" style="margin-bottom: 2rem;">
+    <div class="card-header">
+      <h3 class="card-title">プロフィール情報</h3>
+      <p class="card-subtitle">化粧品開発への想い</p>
+    </div>
+    <div class="card-content">
+      <p><%= simple_format(@user.bio) %></p>
+      <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-light); font-size: 14px; color: var(--text-secondary);">
+        <strong>肌タイプ:</strong> <%= @user.skin_type_name %> |
+        <% if @user.age.present? %>
+          <strong>年齢:</strong> <%= @user.age %>歳 |
+        <% end %>
+        <strong>好み:</strong> <%= @user.preferred_products.present? ? truncate(@user.preferred_products, length: 50) : '未設定' %>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<!-- Recent Formulations Activity -->
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">最近の処方活動</h3>
+    <%= link_to "すべて表示", cosmetic_formulations_path, class: "btn btn-outline btn-small" %>
+  </div>
+  <div class="card-content">
+    <% if @formulations.any? %>
+      <div class="formulation-list">
+        <% @formulations.each do |formulation| %>
+          <div class="formulation-item">
+            <div class="formulation-info">
+              <div class="formulation-title">
+                <%= link_to formulation.product_type_name, formulation, class: "formulation-link" %>
+                <span class="status-badge status-success">完了</span>
+              </div>
+              <div class="formulation-meta">
+                <span class="meta-tag"><%= formulation.skin_type_name %></span>
+                <span class="meta-tag"><%= formulation.target_age_name %></span>
+                <span class="meta-date"><%= formulation.created_at.strftime("%Y年%m月%d日") %></span>
+              </div>
+              <p class="formulation-concerns"><%= truncate(formulation.concerns, length: 80) %></p>
+            </div>
+            <div class="formulation-actions">
+              <%= link_to "詳細", formulation, class: "btn btn-outline btn-small" %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="empty-state">
+        <div class="empty-content">
+          <h4>まだ処方がありません</h4>
+          <p>最初の化粧品処方を作成して、AI による高精度な処方提案を体験しましょう。</p>
+          <%= link_to "新規処方を作成", new_cosmetic_formulation_path, class: "btn btn-primary" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Quick Actions Panel -->
+<div class="card" style="margin-top: 2rem;">
+  <div class="card-header">
+    <h3 class="card-title">クイックアクション</h3>
+    <p class="card-subtitle">よく使う機能に素早くアクセス</p>
+  </div>
+  <div class="card-content">
+    <div class="quick-actions-grid">
+      <%= link_to new_cosmetic_formulation_path, class: "quick-action-item" do %>
+        <div class="action-icon">🧬</div>
+        <div class="action-content">
+          <div class="action-title">新規処方作成</div>
+          <div class="action-desc">AIを使って新しい化粧品処方を生成</div>
+        </div>
+      <% end %>
+      
+      <%= link_to cosmetic_formulations_path, class: "quick-action-item" do %>
+        <div class="action-icon">📊</div>
+        <div class="action-content">
+          <div class="action-title">処方管理</div>
+          <div class="action-desc">作成した処方の閲覧・管理</div>
+        </div>
+      <% end %>
+      
+      <%= link_to profile_edit_path, class: "quick-action-item" do %>
+        <div class="action-icon">⚙️</div>
+        <div class="action-content">
+          <div class="action-title">アカウント設定</div>
+          <div class="action-desc">プロフィール・設定の変更</div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

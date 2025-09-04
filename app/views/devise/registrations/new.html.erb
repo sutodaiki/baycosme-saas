@@ -1,0 +1,233 @@
+<div class="registration-container">
+  <div class="registration-header">
+    <h1>法人アカウント登録</h1>
+    <p class="subtitle">化粧品開発管理システムへようこそ</p>
+  </div>
+
+  <div class="card">
+    <div class="card-content">
+      <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { class: "registration-form" }) do |f| %>
+        <%= render "devise/shared/error_messages", resource: resource %>
+
+        <!-- 会社情報セクション -->
+        <div class="form-section">
+          <h3 class="section-title">📋 会社情報</h3>
+          
+          <div class="form-group">
+            <%= label_tag "user_company_name", "会社名", class: "form-label required" %>
+            <%= text_field_tag "user[company_name]", "", class: "form-input", placeholder: "例：株式会社サンプル", required: true %>
+          </div>
+          
+          <div class="form-section-inner">
+            <h4 class="subsection-title">会社住所</h4>
+            
+            <div class="form-grid">
+              <div class="form-group">
+                <%= label_tag "user_company_postal_code", "郵便番号", class: "form-label" %>
+                <%= text_field_tag "user[company_postal_code]", "", class: "form-input", id: "postal_code", placeholder: "例：100-0001", pattern: "\d{3}-\d{4}", maxlength: "8" %>
+                <small class="form-hint">ハイフンを含めて入力すると自動で住所が補完されます</small>
+                <div id="postal_code_loading" class="loading-indicator" style="display: none;">
+                  <span>住所を取得中...</span>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <%= label_tag "user_company_prefecture", "都道府県", class: "form-label" %>
+                <%= select_tag "user[company_prefecture]", 
+                    content_tag(:option, "都道府県を選択", value: "", selected: true) + 
+                    options_for_select([
+                      ['北海道', '北海道'], ['青森県', '青森県'], ['岩手県', '岩手県'], ['宮城県', '宮城県'], ['秋田県', '秋田県'],
+                      ['山形県', '山形県'], ['福島県', '福島県'], ['茨城県', '茨城県'], ['栃木県', '栃木県'], ['群馬県', '群馬県'],
+                      ['埼玉県', '埼玉県'], ['千葉県', '千葉県'], ['東京都', '東京都'], ['神奈川県', '神奈川県'], ['新潟県', '新潟県'],
+                      ['富山県', '富山県'], ['石川県', '石川県'], ['福井県', '福井県'], ['山梨県', '山梨県'], ['長野県', '長野県'],
+                      ['岐阜県', '岐阜県'], ['静岡県', '静岡県'], ['愛知県', '愛知県'], ['三重県', '三重県'], ['滋賀県', '滋賀県'],
+                      ['京都府', '京都府'], ['大阪府', '大阪府'], ['兵庫県', '兵庫県'], ['奈良県', '奈良県'], ['和歌山県', '和歌山県'],
+                      ['鳥取県', '鳥取県'], ['島根県', '島根県'], ['岡山県', '岡山県'], ['広島県', '広島県'], ['山口県', '山口県'],
+                      ['徳島県', '徳島県'], ['香川県', '香川県'], ['愛媛県', '愛媛県'], ['高知県', '高知県'], ['福岡県', '福岡県'],
+                      ['佐賀県', '佐賀県'], ['長崎県', '長崎県'], ['熊本県', '熊本県'], ['大分県', '大分県'], ['宮崎県', '宮崎県'],
+                      ['鹿児島県', '鹿児島県'], ['沖縄県', '沖縄県']
+                    ]), 
+                    { class: "form-select", id: "prefecture_select" } %>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <%= label_tag "user_company_city_address", "市区町村・番地", class: "form-label" %>
+              <%= text_field_tag "user[company_city_address]", "", class: "form-input", id: "city_address", placeholder: "例：千代田区千代田1-1-1" %>
+            </div>
+            
+            <div class="form-group">
+              <%= label_tag "user_company_building", "建物名・部屋番号", class: "form-label" %>
+              <%= text_field_tag "user[company_building]", "", class: "form-input", placeholder: "例：○○ビル 5F" %>
+              <small class="form-hint">任意入力</small>
+            </div>
+          </div>
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <%= label_tag "user_company_phone", "電話番号", class: "form-label" %>
+              <%= text_field_tag "user[company_phone]", "", class: "form-input", placeholder: "例：03-1234-5678" %>
+            </div>
+            
+            <div class="form-group">
+              <%= label_tag "user_company_website", "ウェブサイト", class: "form-label" %>
+              <%= url_field_tag "user[company_website]", "", class: "form-input", placeholder: "例：https://example.com" %>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <%= label_tag "user_company_employee_count", "従業員数", class: "form-label" %>
+            <%= number_field_tag "user[company_employee_count]", "", class: "form-input", placeholder: "例：50", min: 1 %>
+          </div>
+        </div>
+
+        <!-- 管理者情報セクション -->
+        <div class="form-section">
+          <h3 class="section-title">👤 管理者アカウント情報</h3>
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <%= f.label :name, "お名前", class: "form-label required" %>
+              <%= f.text_field :name, class: "form-input", placeholder: "例：田中 太郎", required: true %>
+            </div>
+            
+            <div class="form-group">
+              <%= f.label :email, "メールアドレス", class: "form-label required" %>
+              <%= f.email_field :email, class: "form-input", placeholder: "例：admin@example.com", autocomplete: "email", required: true %>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <%= f.label :password, "パスワード", class: "form-label required" %>
+              <% if @minimum_password_length %>
+                <small class="form-hint"><%= @minimum_password_length %>文字以上で設定してください</small>
+              <% end %>
+              <%= f.password_field :password, class: "form-input", placeholder: "安全なパスワードを入力", autocomplete: "new-password", required: true %>
+            </div>
+
+            <div class="form-group">
+              <%= f.label :password_confirmation, "パスワード確認", class: "form-label required" %>
+              <%= f.password_field :password_confirmation, class: "form-input", placeholder: "パスワードを再入力", autocomplete: "new-password", required: true %>
+            </div>
+          </div>
+        </div>
+
+        <!-- 利用規約 -->
+        <div class="form-section">
+          <div class="form-group">
+            <label class="checkbox-group">
+              <%= check_box_tag "user[terms_accepted]", "1", false, required: true %>
+              <span class="checkbox-label">
+                <a href="#" target="_blank">利用規約</a>および<a href="#" target="_blank">プライバシーポリシー</a>に同意します
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <%= f.submit "アカウントを作成", class: "btn btn-primary btn-large" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="auth-links">
+    <%= render "devise/shared/links" %>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const postalCodeInput = document.getElementById('postal_code');
+  const prefectureSelect = document.getElementById('prefecture_select');
+  const cityAddressInput = document.getElementById('city_address');
+  const loadingIndicator = document.getElementById('postal_code_loading');
+  
+  let timeout;
+  
+  // 郵便番号フォーマット補正（ハイフン自動挿入）
+  postalCodeInput.addEventListener('input', function(e) {
+    let value = e.target.value.replace(/[^\d]/g, ''); // 数字のみ抽出
+    if (value.length >= 3) {
+      value = value.substr(0, 3) + '-' + value.substr(3, 4);
+    }
+    e.target.value = value;
+    
+    // デバウンス処理（500ms後にAPI呼び出し）
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      if (value.length === 8 && value.match(/^\d{3}-\d{4}$/)) {
+        fetchAddressFromPostalCode(value);
+      }
+    }, 500);
+  });
+  
+  // 郵便番号から住所を取得
+  async function fetchAddressFromPostalCode(postalCode) {
+    const cleanPostalCode = postalCode.replace('-', '');
+    
+    try {
+      loadingIndicator.style.display = 'block';
+      
+      const response = await fetch(`https://zipcloud.ibsnet.co.jp/api/search?zipcode=${cleanPostalCode}`);
+      const data = await response.json();
+      
+      if (data.status === 200 && data.results && data.results.length > 0) {
+        const result = data.results[0];
+        
+        // 都道府県を設定
+        const prefecture = result.address1;
+        for (let option of prefectureSelect.options) {
+          if (option.value === prefecture) {
+            prefectureSelect.value = prefecture;
+            break;
+          }
+        }
+        
+        // 市区町村を設定
+        const cityAddress = result.address2 + result.address3;
+        cityAddressInput.value = cityAddress;
+        
+        // 成功のフィードバック
+        showFeedback('住所を自動入力しました', 'success');
+        
+        // 建物名フィールドにフォーカス
+        document.querySelector('input[name="user[company_building]"]').focus();
+        
+      } else {
+        showFeedback('郵便番号が見つかりませんでした', 'error');
+      }
+    } catch (error) {
+      console.error('Address fetch error:', error);
+      showFeedback('住所の取得に失敗しました', 'error');
+    } finally {
+      loadingIndicator.style.display = 'none';
+    }
+  }
+  
+  // フィードバック表示
+  function showFeedback(message, type) {
+    // 既存のフィードバックを削除
+    const existingFeedback = document.querySelector('.postal-feedback');
+    if (existingFeedback) {
+      existingFeedback.remove();
+    }
+    
+    // フィードバック要素を作成
+    const feedback = document.createElement('div');
+    feedback.className = `postal-feedback postal-${type}`;
+    feedback.textContent = message;
+    
+    // 郵便番号入力フィールドの後に挿入
+    postalCodeInput.parentNode.insertBefore(feedback, loadingIndicator.nextSibling);
+    
+    // 3秒後に自動削除
+    setTimeout(() => {
+      if (feedback.parentNode) {
+        feedback.remove();
+      }
+    }, 3000);
+  }
+});
+</script>

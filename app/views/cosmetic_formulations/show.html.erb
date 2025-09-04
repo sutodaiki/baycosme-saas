@@ -1,0 +1,78 @@
+<div class="formulation-result">
+  <div class="result-header">
+    <h2>🧪 AI処方結果</h2>
+    <div class="result-meta">
+      <span class="creation-date">作成日: <%= @formulation.created_at.strftime("%Y年%m月%d日 %H:%M") %></span>
+      <span class="status-badge">✅ 生成完了</span>
+    </div>
+  </div>
+
+  <div class="condition-summary">
+    <h3>📋 指定条件</h3>
+    <div class="condition-grid">
+      <div class="condition-item">
+        <label>製品タイプ</label>
+        <span><%= @formulation.product_type_name %></span>
+      </div>
+      <div class="condition-item">
+        <label>肌タイプ</label>
+        <span><%= @formulation.skin_type_name %></span>
+      </div>
+      <div class="condition-item">
+        <label>対象年齢</label>
+        <span><%= @formulation.target_age_name %></span>
+      </div>
+      <div class="condition-item full-width">
+        <label>肌悩み・改善ポイント</label>
+        <span><%= @formulation.concerns %></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="formulation-content">
+    <h3>🧬 処方詳細</h3>
+    <% if @formulation.formulation.present? %>
+      <div class="formulation-text">
+        <%= simple_format(@formulation.formulation) %>
+      </div>
+    <% else %>
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>AI処方を生成中です...</p>
+        <p class="loading-note">しばらくお待ちください。ページを更新してください。</p>
+      </div>
+    <% end %>
+  </div>
+
+  <% if @formulation.ai_response.present? %>
+    <div class="ai-response">
+      <h4>🤖 AI からのメッセージ</h4>
+      <p><%= @formulation.ai_response %></p>
+    </div>
+  <% end %>
+
+  <div class="result-actions">
+    <button class="btn btn-primary">🧪 サンプル発注</button>
+    <button class="btn btn-outline">💰 見積もり依頼</button>
+    <%= link_to "新しい処方を作成", new_cosmetic_formulation_path, class: "btn btn-secondary" %>
+    <%= link_to "処方履歴一覧", cosmetic_formulations_path, class: "btn btn-secondary" %>
+    <button onclick="window.print()" class="btn btn-outline">🖨️ 印刷</button>
+  </div>
+
+  <div class="disclaimer">
+    <h4>⚠️ 重要な注意事項</h4>
+    <ul>
+      <li>この処方は参考情報として提供されています</li>
+      <li>実際の化粧品製造には薬事法の遵守と専門的な知識が必要です</li>
+      <li>成分のパッチテストを実施し、安全性を確認してください</li>
+      <li>商業利用の際は必ず化粧品製造業許可を取得してください</li>
+    </ul>
+  </div>
+</div>
+
+<style>
+@media print {
+  .result-actions, .disclaimer { display: none; }
+  .formulation-result { box-shadow: none; }
+}
+</style>
