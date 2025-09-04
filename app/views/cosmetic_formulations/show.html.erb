@@ -1,36 +1,36 @@
 <div class="formulation-result">
   <div class="result-header">
-    <h2>🧪 AI処方結果</h2>
+    <h2>🧪 AI処方開発結果</h2>
     <div class="result-meta">
-      <span class="creation-date">作成日: <%= @formulation.created_at.strftime("%Y年%m月%d日 %H:%M") %></span>
-      <span class="status-badge">✅ 生成完了</span>
+      <span class="creation-date">生成日時: <%= @formulation.created_at.strftime("%Y年%m月%d日 %H:%M") %></span>
+      <span class="status-badge">✅ 処方完了</span>
     </div>
   </div>
 
   <div class="condition-summary">
-    <h3>📋 指定条件</h3>
+    <h3>📋 企画条件</h3>
     <div class="condition-grid">
       <div class="condition-item">
-        <label>製品タイプ</label>
+        <label>企画商品タイプ</label>
         <span><%= @formulation.product_type_name %></span>
       </div>
       <div class="condition-item">
-        <label>肌タイプ</label>
+        <label>ターゲット肌タイプ</label>
         <span><%= @formulation.skin_type_name %></span>
       </div>
       <div class="condition-item">
-        <label>対象年齢</label>
+        <label>ターゲット年齢層</label>
         <span><%= @formulation.target_age_name %></span>
       </div>
       <div class="condition-item full-width">
-        <label>肌悩み・改善ポイント</label>
+        <label>商品コンセプト・解決課題</label>
         <span><%= @formulation.concerns %></span>
       </div>
     </div>
   </div>
 
   <div class="formulation-content">
-    <h3>🧬 処方詳細</h3>
+    <h3>🧬 OEM処方仕様書</h3>
     <% if @formulation.formulation.present? %>
       <div class="formulation-text">
         <%= simple_format(@formulation.formulation) %>
@@ -52,21 +52,118 @@
   <% end %>
 
   <div class="result-actions">
-    <button class="btn btn-primary">🧪 サンプル発注</button>
-    <button class="btn btn-outline">💰 見積もり依頼</button>
-    <%= link_to "新しい処方を作成", new_cosmetic_formulation_path, class: "btn btn-secondary" %>
-    <%= link_to "処方履歴一覧", cosmetic_formulations_path, class: "btn btn-secondary" %>
+    <button onclick="showSampleOrderModal()" class="btn btn-primary btn-large">🧪 サンプル発注する</button>
+    <button onclick="showQuoteRequestModal()" class="btn btn-outline btn-large">💰 見積もり依頼</button>
+    <%= link_to "新規企画を開発", new_cosmetic_formulation_path, class: "btn btn-secondary" %>
+    <%= link_to "企画開発履歴", cosmetic_formulations_path, class: "btn btn-secondary" %>
     <button onclick="window.print()" class="btn btn-outline">🖨️ 印刷</button>
-  </div>
+  </div>  
+</div>
 
-  <div class="disclaimer">
-    <h4>⚠️ 重要な注意事項</h4>
-    <ul>
-      <li>この処方は参考情報として提供されています</li>
-      <li>実際の化粧品製造には薬事法の遵守と専門的な知識が必要です</li>
-      <li>成分のパッチテストを実施し、安全性を確認してください</li>
-      <li>商業利用の際は必ず化粧品製造業許可を取得してください</li>
-    </ul>
+<!-- Sample Order Modal -->
+<div id="sampleOrderModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>🧪 サンプル発注フォーム</h3>
+      <button class="modal-close" onclick="closeSampleOrderModal()">&times;</button>
+    </div>
+    <form class="modal-form" action="#" method="post">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label required">ご担当者名</label>
+          <input type="text" class="form-input" name="contact_name" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label required">会社名</label>
+          <input type="text" class="form-input" name="company_name" value="<%= current_user.company&.name %>" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label required">メールアドレス</label>
+          <input type="email" class="form-input" name="email" value="<%= current_user.email %>" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label required">電話番号</label>
+          <input type="tel" class="form-input" name="phone" value="<%= current_user.company&.phone %>" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">希望サンプル量</label>
+        <select class="form-select" name="sample_amount">
+          <option value="50g">50g（基本サンプル）</option>
+          <option value="100g">100g（詳細テスト用）</option>
+          <option value="200g">200g（社内評価用）</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">特記事項・ご要望</label>
+        <textarea class="form-textarea" name="notes" rows="3" placeholder="特別な仕様や要望があればご記入ください"></textarea>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">サンプル発注を依頼</button>
+        <button type="button" class="btn btn-secondary" onclick="closeSampleOrderModal()">キャンセル</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Quote Request Modal -->
+<div id="quoteRequestModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>💰 見積もり依頼フォーム</h3>
+      <button class="modal-close" onclick="closeQuoteRequestModal()">&times;</button>
+    </div>
+    <form class="modal-form" action="#" method="post">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label required">ご担当者名</label>
+          <input type="text" class="form-input" name="contact_name" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label required">会社名</label>
+          <input type="text" class="form-input" name="company_name" value="<%= current_user.company&.name %>" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label required">メールアドレス</label>
+          <input type="email" class="form-input" name="email" value="<%= current_user.email %>" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label required">電話番号</label>
+          <input type="tel" class="form-input" name="phone" value="<%= current_user.company&.phone %>" required>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">想定製造ロット数</label>
+          <select class="form-select" name="production_lot">
+            <option value="500">500個（最小ロット）</option>
+            <option value="1000">1,000個</option>
+            <option value="3000">3,000個</option>
+            <option value="5000">5,000個</option>
+            <option value="10000">10,000個</option>
+            <option value="custom">その他（備考欄に記載）</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">希望納期</label>
+          <select class="form-select" name="delivery_time">
+            <option value="">未定</option>
+            <option value="1month">1ヶ月以内</option>
+            <option value="2months">2ヶ月以内</option>
+            <option value="3months">3ヶ月以内</option>
+            <option value="6months">6ヶ月以内</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">その他ご要望・質問</label>
+        <textarea class="form-textarea" name="notes" rows="3" placeholder="容器指定、ラベルデザイン、特別な要求などがあればご記入ください"></textarea>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">見積もりを依頼</button>
+        <button type="button" class="btn btn-secondary" onclick="closeQuoteRequestModal()">キャンセル</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -75,4 +172,123 @@
   .result-actions, .disclaimer { display: none; }
   .formulation-result { box-shadow: none; }
 }
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: var(--bg-primary);
+  margin: 5% auto;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-xl);
+  width: 90%;
+  max-width: 600px;
+  box-shadow: var(--shadow-xl);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  padding: var(--space-6);
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.modal-form {
+  padding: var(--space-6);
+}
+
+.modal-form .form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
 </style>
+
+<script>
+function showSampleOrderModal() {
+  document.getElementById('sampleOrderModal').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSampleOrderModal() {
+  document.getElementById('sampleOrderModal').style.display = 'none';
+  document.body.style.overflow = 'auto';
+}
+
+function showQuoteRequestModal() {
+  document.getElementById('quoteRequestModal').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeQuoteRequestModal() {
+  document.getElementById('quoteRequestModal').style.display = 'none';
+  document.body.style.overflow = 'auto';
+}
+
+// Close modals when clicking outside
+window.onclick = function(event) {
+  const sampleModal = document.getElementById('sampleOrderModal');
+  const quoteModal = document.getElementById('quoteRequestModal');
+  
+  if (event.target === sampleModal) {
+    closeSampleOrderModal();
+  }
+  if (event.target === quoteModal) {
+    closeQuoteRequestModal();
+  }
+}
+
+// Handle form submissions (placeholder - replace with actual API calls)
+document.querySelector('#sampleOrderModal form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  alert('サンプル発注のご依頼を承りました。担当者よりご連絡差し上げます。');
+  closeSampleOrderModal();
+});
+
+document.querySelector('#quoteRequestModal form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  alert('見積もり依頼を承りました。2営業日以内にご連絡差し上げます。');
+  closeQuoteRequestModal();
+});
+</script>

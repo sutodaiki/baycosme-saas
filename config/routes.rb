@@ -1,4 +1,8 @@
 Rails.application.routes.draw do
+  devise_for :admins, path: 'admin', controllers: {
+    sessions: 'admins/sessions',
+    registrations: 'admins/registrations'
+  }
   devise_for :users, controllers: {
     registrations: 'users/registrations'
   }
@@ -6,9 +10,15 @@ Rails.application.routes.draw do
   
   resources :cosmetic_formulations, only: [:index, :new, :create, :show]
   
-  # User profile routes
-  get 'mypage', to: 'users#show'
-  get 'profile/edit', to: 'users#edit'
+  # Admin routes
+  get '/admin', to: 'admin/home#index'
+  namespace :admin do
+    get 'dashboard', to: 'dashboard#index'
+  end
+
+  # User dashboard routes
+  get 'dashboard', to: 'users#show'
+  get 'profile/edit', to:'users#edit'
   patch 'profile', to: 'users#update'
   put 'profile', to: 'users#update'
   

@@ -13,17 +13,7 @@ class User < ApplicationRecord
     ['メンバー', 'member']
   ].freeze
   
-  SKIN_TYPES = [
-    ['普通肌', 'normal'],
-    ['乾燥肌', 'dry'],
-    ['オイリー肌', 'oily'],
-    ['混合肌', 'combination'],
-    ['敏感肌', 'sensitive']
-  ].freeze
-  
   validates :name, length: { maximum: 50 }
-  validates :age, numericality: { greater_than: 0, less_than: 150 }, allow_blank: true
-  validates :bio, length: { maximum: 500 }
   validates :role, inclusion: { in: ROLES.map(&:last) }
   
   scope :admins, -> { where(role: 'admin') }
@@ -33,20 +23,11 @@ class User < ApplicationRecord
     name.present? ? name : email.split('@').first
   end
   
-  def skin_type_name
-    SKIN_TYPES.find { |name, value| value == skin_type }&.first || '未設定'
-  end
-  
   def profile_completion_percentage
-    total_fields = 6
+    total_fields = 1
     completed_fields = 0
     
     completed_fields += 1 if name.present?
-    completed_fields += 1 if age.present?
-    completed_fields += 1 if skin_type.present?
-    completed_fields += 1 if preferred_products.present?
-    completed_fields += 1 if bio.present?
-    completed_fields += 1 if avatar_url.present?
     
     (completed_fields.to_f / total_fields * 100).round
   end

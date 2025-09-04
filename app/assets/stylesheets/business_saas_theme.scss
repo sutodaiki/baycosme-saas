@@ -612,6 +612,84 @@ body::after {
   }
 }
 
+// Authentication Styles
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--primary-blue-50) 100%);
+  padding: 2rem 1rem;
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+  }
+  
+  .subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+}
+
+.auth-form {
+  width: 100%;
+  max-width: 400px;
+}
+
+.auth-links {
+  margin-top: 2rem;
+  text-align: center;
+  
+  .auth-link {
+    display: inline-block;
+    margin: 0.5rem 0;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    transition: all 0.2s ease;
+    
+    &.primary {
+      background-color: var(--primary-blue-100);
+      color: var(--primary-blue);
+      border: 1px solid var(--primary-blue-200);
+      
+      &:hover {
+        background-color: var(--primary-blue-200);
+        transform: translateY(-1px);
+      }
+    }
+    
+    &.secondary {
+      color: var(--text-secondary);
+      
+      &:hover {
+        color: var(--primary-blue);
+        text-decoration: underline;
+      }
+    }
+    
+    &:not(.primary):not(.secondary) {
+      color: var(--text-primary);
+      
+      &:hover {
+        color: var(--primary-blue);
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
 // Professional Form Styles
 .form-group {
   margin-bottom: var(--space-5);
@@ -622,6 +700,12 @@ body::after {
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: var(--space-2);
+    
+    &.required::after {
+      content: ' *';
+      color: var(--error);
+      font-weight: normal;
+    }
   }
   
   .form-input,
@@ -689,6 +773,124 @@ body::after {
   &.status-info {
     background-color: var(--info-light);
     color: var(--info);
+  }
+}
+
+// Profile Page Styles
+.profile-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: var(--space-6);
+}
+
+.profile-header {
+  text-align: center;
+  margin-bottom: var(--space-8);
+  
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+  }
+  
+  .subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+}
+
+.profile-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-4);
+}
+
+.info-item {
+  .info-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--space-1);
+  }
+  
+  .info-value {
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 500;
+    
+    .link-external {
+      color: var(--primary-blue);
+      text-decoration: none;
+      
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+.profile-form {
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-4);
+  }
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.section-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-4) 0;
+}
+
+.card-danger {
+  border-color: var(--error-light);
+  
+  .card-header {
+    background-color: var(--error-light);
+    border-color: var(--error-light);
+    
+    .card-title {
+      color: var(--error);
+    }
+  }
+}
+
+// Admin Access Link
+.admin-link {
+  margin-top: var(--space-4);
+  text-align: center;
+  
+  .admin-access-link {
+    font-size: 0.875rem;
+    color: var(--text-tertiary);
+    text-decoration: none;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+    
+    &:hover {
+      color: var(--primary-blue);
+      background-color: var(--bg-secondary);
+    }
   }
 }
 

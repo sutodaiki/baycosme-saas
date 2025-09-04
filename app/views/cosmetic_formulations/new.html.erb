@@ -1,7 +1,7 @@
 <div class="formulation-container">
   <div class="formulation-form">
-    <h2>AI化粧品処方開発</h2>
-    <p class="subtitle">あなたの条件に最適な化粧品処方をAIが提案します</p>
+    <h2>🧪 AI化粧品処方開発システム</h2>
+    <p class="subtitle">市場ニーズに応える新商品企画のための処方をAIが提案します</p>
 
     <%= form_with(model: @formulation, local: true, html: { class: "cosmetic-form" }) do |f| %>
       <% if @formulation.errors.any? %>
@@ -16,7 +16,7 @@
       <% end %>
 
       <div class="form-group">
-        <%= f.label :product_type, "製品タイプ", class: "form-label required" %>
+        <%= f.label :product_type, "企画商品タイプ", class: "form-label required" %>
         <%= f.select :product_type, 
             options_for_select([['選択してください', '']] + CosmeticFormulation::PRODUCT_TYPES, @formulation.product_type),
             {}, 
@@ -24,7 +24,7 @@
       </div>
 
       <div class="form-group">
-        <%= f.label :skin_type, "肌タイプ", class: "form-label required" %>
+        <%= f.label :skin_type, "ターゲット肌タイプ", class: "form-label required" %>
         <div class="radio-group">
           <% CosmeticFormulation::SKIN_TYPES.each do |name, value| %>
             <label class="radio-option">
@@ -36,16 +36,16 @@
       </div>
 
       <div class="form-group">
-        <%= f.label :concerns, "肌悩み・改善したいポイント", class: "form-label required" %>
+        <%= f.label :concerns, "商品コンセプト・解決したい課題", class: "form-label required" %>
         <%= f.text_area :concerns, 
             class: "form-textarea", 
             rows: 4, 
-            placeholder: "例：乾燥、毛穴の黒ずみ、シワ、くすみ、ニキビ、敏感肌など、具体的にご記入ください。",
+            placeholder: "例：エイジングケア、美白・シミ対策、毛穴ケア、乾燥対策、ニキビ・肌荒れケア、敏感肌向け低刺激など、ターゲット市場のニーズを具体的にご記入ください。",
             required: true %>
       </div>
 
       <div class="form-group">
-        <%= f.label :target_age, "対象年齢", class: "form-label required" %>
+        <%= f.label :target_age, "ターゲット年齢層", class: "form-label required" %>
         <div class="radio-group">
           <% CosmeticFormulation::TARGET_AGES.each do |name, value| %>
             <label class="radio-option">
@@ -57,26 +57,9 @@
       </div>
 
       <div class="form-actions">
-        <%= f.submit "AI処方を生成する", class: "btn btn-primary btn-large" %>
+        <%= f.submit "🚀 AI処方を生成する", class: "btn btn-primary btn-large" %>
         <%= link_to "戻る", cosmetic_formulations_path, class: "btn btn-secondary" %>
       </div>
     <% end %>
-  </div>
-  
-  <div class="info-panel">
-    <h3>💡 AI処方開発について</h3>
-    <div class="info-content">
-      <h4>🧪 専門的な処方提案</h4>
-      <p>化粧品開発の専門知識に基づき、成分配合から製造工程まで詳細な処方を提案します。</p>
-      
-      <h4>🎯 パーソナライズド</h4>
-      <p>あなたの肌質、年齢、悩みに特化したオーダーメイド処方を作成します。</p>
-      
-      <h4>⚗️ 安全性重視</h4>
-      <p>化粧品製造基準に準拠した、安全で実用的な処方のみを提案します。</p>
-      
-      <h4>📊 詳細レポート</h4>
-      <p>成分の役割、効果、製造工程を詳しく説明したレポートを提供します。</p>
-    </div>
-  </div>
+  </div>  
 </div>

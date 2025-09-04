@@ -1,0 +1,242 @@
+<div class="admin-portal">
+  <div class="admin-portal-header">
+    <h1>🏢 OEM管理システム</h1>
+    <p class="subtitle">化粧品OEM事業管理者ポータル</p>
+  </div>
+
+  <div class="admin-portal-content">
+    <div class="portal-grid">
+      <!-- Login Section -->
+      <div class="portal-card">
+        <div class="portal-card-header">
+          <h3>🔑 管理者ログイン</h3>
+          <p>既存の管理者アカウントでログイン</p>
+        </div>
+        <div class="portal-card-content">
+          <ul class="feature-list">
+            <li>クライアント企業管理</li>
+            <li>処方開発活動監視</li>
+            <li>システム統計分析</li>
+            <li>ユーザー管理</li>
+          </ul>
+          <%= link_to "管理者ログイン", new_admin_session_path, class: "btn btn-primary btn-large" %>
+        </div>
+      </div>
+
+      <!-- Registration Section -->
+      <div class="portal-card">
+        <div class="portal-card-header">
+          <h3>➕ 管理者登録</h3>
+          <p>新しい管理者アカウントを作成</p>
+        </div>
+        <div class="portal-card-content">
+          <ul class="feature-list">
+            <li>社内管理者追加</li>
+            <li>役割ベースアクセス</li>
+            <li>セキュアな認証</li>
+            <li>完全管理権限</li>
+          </ul>
+          <%= link_to "管理者登録", new_admin_registration_path, class: "btn btn-outline btn-large" %>
+        </div>
+      </div>
+    </div>
+
+    <!-- System Information -->
+    <div class="system-info">
+      <h4>📊 システム概要</h4>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">サービス</div>
+          <div class="info-value">AI化粧品処方開発システム</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">対象</div>
+          <div class="info-value">化粧品メーカー企画担当者</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">機能</div>
+          <div class="info-value">AI処方生成・サンプル発注・見積もり依頼</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">管理</div>
+          <div class="info-value">クライアント企業・ユーザー・開発活動</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="portal-footer">
+      <p>© 2024 化粧品OEM管理システム</p>
+      <%= link_to "ユーザーサイトへ戻る", root_path, class: "back-to-site" %>
+    </div>
+  </div>
+</div>
+
+<style>
+.admin-portal {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  padding: 2rem 1rem;
+}
+
+.admin-portal-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+  }
+  
+  .subtitle {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+}
+
+.admin-portal-content {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.portal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.portal-card {
+  background: white;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+  }
+}
+
+.portal-card-header {
+  padding: 2rem 2rem 1rem 2rem;
+  border-bottom: 1px solid var(--border-light);
+  
+  h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+  }
+  
+  p {
+    color: var(--text-secondary);
+    margin: 0;
+  }
+}
+
+.portal-card-content {
+  padding: 2rem;
+}
+
+.feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem 0;
+  
+  li {
+    padding: 0.5rem 0;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    
+    &:before {
+      content: "✓";
+      color: var(--secondary-green);
+      font-weight: bold;
+      margin-right: 0.5rem;
+    }
+  }
+}
+
+.system-info {
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 2rem;
+  
+  h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+  }
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.info-item {
+  .info-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+  }
+  
+  .info-value {
+    font-size: 1rem;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+}
+
+.portal-footer {
+  text-align: center;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-light);
+  
+  p {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+  }
+  
+  .back-to-site {
+    color: var(--primary-blue);
+    text-decoration: none;
+    font-weight: 500;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-portal-header h1 {
+    font-size: 2rem;
+  }
+  
+  .portal-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .portal-card-header,
+  .portal-card-content {
+    padding: 1.5rem;
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

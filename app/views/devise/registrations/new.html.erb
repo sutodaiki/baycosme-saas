@@ -23,8 +23,8 @@
             
             <div class="form-grid">
               <div class="form-group">
-                <%= label_tag "user_company_postal_code", "郵便番号", class: "form-label" %>
-                <%= text_field_tag "user[company_postal_code]", "", class: "form-input", id: "postal_code", placeholder: "例：100-0001", pattern: "\d{3}-\d{4}", maxlength: "8" %>
+                <%= label_tag "user_company_postal_code", "郵便番号", class: "form-label required" %>
+                <%= text_field_tag "user[company_postal_code]", "", class: "form-input", id: "postal_code", placeholder: "例：100-0001", maxlength: "8", required: true, autocomplete: "postal-code" %>
                 <small class="form-hint">ハイフンを含めて入力すると自動で住所が補完されます</small>
                 <div id="postal_code_loading" class="loading-indicator" style="display: none;">
                   <span>住所を取得中...</span>
@@ -32,7 +32,7 @@
               </div>
               
               <div class="form-group">
-                <%= label_tag "user_company_prefecture", "都道府県", class: "form-label" %>
+                <%= label_tag "user_company_prefecture", "都道府県", class: "form-label required" %>
                 <%= select_tag "user[company_prefecture]", 
                     content_tag(:option, "都道府県を選択", value: "", selected: true) + 
                     options_for_select([
@@ -47,13 +47,13 @@
                       ['佐賀県', '佐賀県'], ['長崎県', '長崎県'], ['熊本県', '熊本県'], ['大分県', '大分県'], ['宮崎県', '宮崎県'],
                       ['鹿児島県', '鹿児島県'], ['沖縄県', '沖縄県']
                     ]), 
-                    { class: "form-select", id: "prefecture_select" } %>
+                    { class: "form-select", id: "prefecture_select", required: true } %>
               </div>
             </div>
             
             <div class="form-group">
-              <%= label_tag "user_company_city_address", "市区町村・番地", class: "form-label" %>
-              <%= text_field_tag "user[company_city_address]", "", class: "form-input", id: "city_address", placeholder: "例：千代田区千代田1-1-1" %>
+              <%= label_tag "user_company_city_address", "市区町村・番地", class: "form-label required" %>
+              <%= text_field_tag "user[company_city_address]", "", class: "form-input", id: "city_address", placeholder: "例：千代田区千代田1-1-1", required: true %>
             </div>
             
             <div class="form-group">
@@ -153,6 +153,16 @@ document.addEventListener('DOMContentLoaded', function() {
       value = value.substr(0, 3) + '-' + value.substr(3, 4);
     }
     e.target.value = value;
+    
+    // バリデーション状態をリセット
+    e.target.setCustomValidity('');
+    
+    // カスタムバリデーション
+    if (value.length === 8 && !value.match(/^\d{3}-\d{4}$/)) {
+      e.target.setCustomValidity('郵便番号は000-0000の形式で入力してください');
+    } else if (value.length > 0 && value.length < 8) {
+      e.target.setCustomValidity('郵便番号は7桁で入力してください');
+    }
     
     // デバウンス処理（500ms後にAPI呼び出し）
     clearTimeout(timeout);

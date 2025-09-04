@@ -30,7 +30,7 @@
           <nav class="sidebar-nav">
             <ul class="nav-menu">
               <li class="nav-item">
-                <%= link_to mypage_path, class: "nav-link #{'active' if controller_name == 'users' && action_name == 'show'}" do %>
+                <%= link_to dashboard_path, class: "nav-link #{'active' if controller_name == 'users' && action_name == 'show'}" do %>
                   <span class="nav-icon">🏠</span>
                   <span class="nav-text">ダッシュボード</span>
                 <% end %>
@@ -51,7 +51,7 @@
               </li>
               
               <li class="nav-item">
-                <%= link_to profile_edit_path, class: "nav-link #{'active' if controller_name == 'users' && action_name == 'edit'}" do %>
+                <%= link_to edit_user_registration_path, class: "nav-link #{'active' if controller_name == 'registrations' && action_name == 'edit'}" do %>
                   <span class="nav-icon">⚙️</span>
                   <span class="nav-text">設定</span>
                 <% end %>
@@ -61,11 +61,7 @@
             <div class="sidebar-footer">
               <div class="user-info">
                 <div class="user-avatar">
-                  <% if current_user.avatar_url.present? %>
-                    <img src="<%= current_user.avatar_url %>" alt="<%= current_user.display_name %>">
-                  <% else %>
-                    <div class="avatar-placeholder">👤</div>
-                  <% end %>
+                  <div class="avatar-placeholder">👤</div>
                 </div>
                 <div class="user-details">
                   <div class="user-name"><%= current_user.display_name %></div>

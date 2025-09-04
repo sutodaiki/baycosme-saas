@@ -3,11 +3,11 @@
   <div class="dashboard-header">
     <div>
       <h1>ようこそ、<%= @user.display_name %>さん</h1>
-      <p class="dashboard-subtitle">あなたの化粧品開発管理ダッシュボード</p>
+      <p class="dashboard-subtitle">AI化粧品処方開発システム - 企画管理ダッシュボード</p>
     </div>
     <div class="header-actions">
-      <%= link_to "プロフィール編集", profile_edit_path, class: "btn btn-outline" %>
-      <%= link_to "新規処方作成", new_cosmetic_formulation_path, class: "btn btn-primary" %>
+      <%= link_to "プロフィール編集", edit_user_registration_path, class: "btn btn-outline" %>
+      <%= link_to "新規企画開発", new_cosmetic_formulation_path, class: "btn btn-primary" %>
     </div>
   </div>
 </div>
@@ -16,12 +16,12 @@
 <div class="kpi-grid">
   <div class="dashboard-widget">
     <div class="widget-header">
-      <h3 class="widget-title">総処方数</h3>
+      <h3 class="widget-title">総企画数</h3>
       <a href="<%= cosmetic_formulations_path %>" class="widget-action">すべて表示</a>
     </div>
     <div class="widget-content">
       <div class="metric-value"><%= @user.cosmetic_formulations.count %></div>
-      <div class="metric-label">作成済み処方</div>
+      <div class="metric-label">開発済み企画</div>
       <div class="metric-change positive">
         <span>↗</span> +<%= @user.formulations_this_month %> 今月
       </div>
@@ -30,12 +30,12 @@
   
   <div class="dashboard-widget">
     <div class="widget-header">
-      <h3 class="widget-title">月間作成数</h3>
+      <h3 class="widget-title">月間開発数</h3>
       <span class="widget-action">この月</span>
     </div>
     <div class="widget-content">
       <div class="metric-value"><%= @user.formulations_this_month %></div>
-      <div class="metric-label">今月の処方作成</div>
+      <div class="metric-label">今月の企画開発</div>
       <div class="metric-change <%= @user.formulations_this_month > 2 ? 'positive' : 'neutral' %>">
         <% if @user.formulations_this_month > 2 %>
           <span>📈</span> 順調です
@@ -63,7 +63,7 @@
   <div class="dashboard-widget">
     <div class="widget-header">
       <h3 class="widget-title">プロフィール完成度</h3>
-      <%= link_to "更新", profile_edit_path, class: "widget-action" %>
+      <%= link_to "更新", edit_user_registration_path, class: "widget-action" %>
     </div>
     <div class="widget-content">
       <div class="metric-value"><%= @user.profile_completion_percentage %>%</div>
@@ -86,25 +86,37 @@
 <% if @user.profile_completion_percentage < 100 %>
   <div class="alert notice" style="margin-bottom: 2rem;">
     <strong>プロフィール未完了:</strong> プロフィールを完成させて、より精密な処方提案を受けましょう。
-    <%= link_to "プロフィールを編集", profile_edit_path, class: "btn btn-primary btn-small", style: "margin-left: 1rem;" %>
+    <%= link_to "プロフィールを編集", edit_user_registration_path, class: "btn btn-primary btn-small", style: "margin-left: 1rem;" %>
   </div>
 <% end %>
 
-<!-- User Bio Section -->
-<% if @user.bio.present? %>
+<!-- Company Information Section -->
+<% if @user.company %>
   <div class="card" style="margin-bottom: 2rem;">
     <div class="card-header">
-      <h3 class="card-title">プロフィール情報</h3>
-      <p class="card-subtitle">化粧品開発への想い</p>
+      <h3 class="card-title">🏢 会社情報</h3>
+      <p class="card-subtitle">所属企業の詳細情報</p>
     </div>
     <div class="card-content">
-      <p><%= simple_format(@user.bio) %></p>
-      <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-light); font-size: 14px; color: var(--text-secondary);">
-        <strong>肌タイプ:</strong> <%= @user.skin_type_name %> |
-        <% if @user.age.present? %>
-          <strong>年齢:</strong> <%= @user.age %>歳 |
-        <% end %>
-        <strong>好み:</strong> <%= @user.preferred_products.present? ? truncate(@user.preferred_products, length: 50) : '未設定' %>
+      <div class="info-grid">
+        <div class="info-item">
+          <label class="info-label">会社名</label>
+          <div class="info-value"><%= @user.company.name %></div>
+        </div>
+        <div class="info-item">
+          <label class="info-label">住所</label>
+          <div class="info-value"><%= @user.company.address %></div>
+        </div>
+        <div class="info-item">
+          <label class="info-label">従業員数</label>
+          <div class="info-value"><%= @user.company.employee_count || '未設定' %>人</div>
+        </div>
+        <div class="info-item">
+          <label class="info-label">プラン</label>
+          <div class="info-value">
+            <span class="status-badge status-info"><%= @user.company.plan_name %></span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -113,7 +125,7 @@
 <!-- Recent Formulations Activity -->
 <div class="card">
   <div class="card-header">
-    <h3 class="card-title">最近の処方活動</h3>
+    <h3 class="card-title">最近の企画開発活動</h3>
     <%= link_to "すべて表示", cosmetic_formulations_path, class: "btn btn-outline btn-small" %>
   </div>
   <div class="card-content">
@@ -142,9 +154,9 @@
     <% else %>
       <div class="empty-state">
         <div class="empty-content">
-          <h4>まだ処方がありません</h4>
-          <p>最初の化粧品処方を作成して、AI による高精度な処方提案を体験しましょう。</p>
-          <%= link_to "新規処方を作成", new_cosmetic_formulation_path, class: "btn btn-primary" %>
+          <h4>まだ企画がありません</h4>
+          <p>最初の化粧品企画を開始して、AI による高精度な処方提案を体験しましょう。</p>
+          <%= link_to "新規企画を開発", new_cosmetic_formulation_path, class: "btn btn-primary" %>
         </div>
       </div>
     <% end %>
@@ -162,20 +174,20 @@
       <%= link_to new_cosmetic_formulation_path, class: "quick-action-item" do %>
         <div class="action-icon">🧬</div>
         <div class="action-content">
-          <div class="action-title">新規処方作成</div>
-          <div class="action-desc">AIを使って新しい化粧品処方を生成</div>
+          <div class="action-title">新規企画開発</div>
+          <div class="action-desc">AIを使って新しい化粧品企画を開発</div>
         </div>
       <% end %>
       
       <%= link_to cosmetic_formulations_path, class: "quick-action-item" do %>
         <div class="action-icon">📊</div>
         <div class="action-content">
-          <div class="action-title">処方管理</div>
-          <div class="action-desc">作成した処方の閲覧・管理</div>
+          <div class="action-title">企画管理</div>
+          <div class="action-desc">開発した企画の閲覧・管理</div>
         </div>
       <% end %>
       
-      <%= link_to profile_edit_path, class: "quick-action-item" do %>
+      <%= link_to edit_user_registration_path, class: "quick-action-item" do %>
         <div class="action-icon">⚙️</div>
         <div class="action-content">
           <div class="action-title">アカウント設定</div>

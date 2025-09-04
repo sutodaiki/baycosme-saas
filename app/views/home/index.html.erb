@@ -1,48 +1,26 @@
 <div class="saas-home-container">
-  <div class="hero-content">
-    <h1>⚡ AI COSMETIC LAB</h1>
-    <p class="hero-subtitle">🚀 NEXT-GEN FORMULATION PROTOCOL</p>
-    <p class="hero-description">Advanced AI algorithms analyze your skin biometrics to generate personalized cosmetic formulations with blockchain-verified ingredients</p>
-    
-    <!-- Web3 Stats -->
-    <div class="stats-grid">
-      <div class="stat-item">
-        <div class="stat-number">1,337</div>
-        <div class="stat-label">FORMULATIONS GENERATED</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-number">42K</div>
-        <div class="stat-label">ACTIVE USERS</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-number">99.9%</div>
-        <div class="stat-label">SUCCESS RATE</div>
-      </div>
-    </div>
-  </div>
-  
   <% if user_signed_in? %>
     <div class="user-dashboard">
       <p class="welcome-message">おかえりなさい、<%= current_user.email %> さん！</p>
       
       <div class="dashboard-actions">
-        <%= link_to mypage_path, class: "btn btn-primary btn-large" do %>
-          👤 マイページ
+        <%= link_to dashboard_path, class: "btn btn-primary btn-large" do %>
+          📊 ダッシュボード
         <% end %>
         
         <%= link_to new_cosmetic_formulation_path, class: "btn btn-outline" do %>
-          🧬 新しい処方を作成
+          🧬 新しい企画を開発
         <% end %>
         
         <%= link_to cosmetic_formulations_path, class: "btn btn-outline" do %>
-          📚 処方履歴を見る
+          📚 企画履歴を見る
         <% end %>
       </div>
       
       <% recent_formulations = current_user.cosmetic_formulations.limit(3).order(created_at: :desc) %>
       <% if recent_formulations.any? %>
         <div class="recent-formulations">
-          <h3>最近の処方</h3>
+          <h3>最近の企画</h3>
           <div class="recent-grid">
             <% recent_formulations.each do |formulation| %>
               <div class="recent-card">
@@ -69,25 +47,25 @@
       <div class="features-grid">
         <div class="feature-card">
           <div class="feature-icon">🎯</div>
-          <h3>パーソナライズド</h3>
-          <p>あなたの肌質に合わせた専用処方</p>
+          <h3>市場ニーズ対応</h3>
+          <p>ターゲット市場に最適化した処方提案</p>
         </div>
         
         <div class="feature-card">
           <div class="feature-icon">⚗️</div>
-          <h3>専門的処方</h3>
-          <p>化粧品開発の専門知識を活用</p>
+          <h3>OEM連携</h3>
+          <p>処方から製造までシームレス連携</p>
         </div>
         
         <div class="feature-card">
           <div class="feature-icon">⚡</div>
-          <h3>瞬時に生成</h3>
-          <p>数秒で詳細な処方レポート</p>
+          <h3>実用的仕様</h3>
+          <p>量産製造可能な詳細仕様書</p>
         </div>
       </div>
       
       <div class="auth-links">
-        <%= link_to "無料で始める", new_user_registration_path, class: "btn btn-primary btn-large" %>
+        <%= link_to "無料で企画開始", new_user_registration_path, class: "btn btn-primary btn-large" %>
         <%= link_to "ログイン", new_user_session_path, class: "btn btn-outline" %>
       </div>
     </div>

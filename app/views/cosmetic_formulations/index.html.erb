@@ -1,7 +1,7 @@
 <div class="formulations-index">
   <div class="page-header">
-    <h2>📚 処方履歴</h2>
-    <%= link_to "新しい処方を作成", new_cosmetic_formulation_path, class: "btn btn-primary" %>
+    <h2>📚 AI処方開発履歴</h2>
+    <%= link_to "新規処方を開発", new_cosmetic_formulation_path, class: "btn btn-primary" %>
   </div>
 
   <% if @formulations.any? %>
@@ -42,9 +42,9 @@
   <% else %>
     <div class="empty-state">
       <div class="empty-icon">🧪</div>
-      <h3>まだ処方がありません</h3>
-      <p>最初の化粧品処方をAIに作成してもらいましょう！</p>
-      <%= link_to "処方を作成する", new_cosmetic_formulation_path, class: "btn btn-primary btn-large" %>
+      <h3>まだ開発履歴がありません</h3>
+      <p>AI処方開発システムで新商品の企画を始めましょう！</p>
+      <%= link_to "新規処方を開発", new_cosmetic_formulation_path, class: "btn btn-primary btn-large" %>
     </div>
   <% end %>
 </div>

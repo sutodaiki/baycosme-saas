@@ -1,0 +1,246 @@
+<div class="admin-dashboard">
+  <div class="admin-header">
+    <h1>🏢 OEM管理ダッシュボード</h1>
+    <p class="subtitle">化粧品OEM事業の管理・分析システム</p>
+    <div class="admin-actions">
+      <%= link_to "ログアウト", destroy_admin_session_path, data: { method: :delete }, class: "btn btn-secondary" %>
+    </div>
+  </div>
+
+  <!-- KPI Overview -->
+  <div class="kpi-grid">
+    <div class="dashboard-widget">
+      <div class="widget-header">
+        <h3 class="widget-title">総登録企業数</h3>
+      </div>
+      <div class="widget-content">
+        <div class="metric-value"><%= @total_companies %></div>
+        <div class="metric-label">クライアント企業</div>
+        <div class="metric-change positive">
+          <span>📈</span> アクティブ: <%= @active_companies %>社
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-widget">
+      <div class="widget-header">
+        <h3 class="widget-title">総ユーザー数</h3>
+      </div>
+      <div class="widget-content">
+        <div class="metric-value"><%= @total_users %></div>
+        <div class="metric-label">システム利用者</div>
+        <div class="metric-change info">
+          <span>👥</span> 企画担当者
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-widget">
+      <div class="widget-header">
+        <h3 class="widget-title">総処方開発数</h3>
+      </div>
+      <div class="widget-content">
+        <div class="metric-value"><%= @total_formulations %></div>
+        <div class="metric-label">AI処方生成</div>
+        <div class="metric-change positive">
+          <span>🧪</span> 今月: <%= @monthly_formulations %>件
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity -->
+  <div class="admin-content">
+    <div class="admin-section">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">🏢 最近登録された企業</h3>
+        </div>
+        <div class="card-content">
+          <% if @recent_companies.any? %>
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>会社名</th>
+                    <th>住所</th>
+                    <th>従業員数</th>
+                    <th>プラン</th>
+                    <th>ステータス</th>
+                    <th>登録日</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% @recent_companies.each do |company| %>
+                    <tr>
+                      <td><strong><%= company.name %></strong></td>
+                      <td><%= truncate(company.address, length: 40) %></td>
+                      <td><%= company.employee_count %>人</td>
+                      <td>
+                        <span class="status-badge status-info">
+                          <%= company.plan_name %>
+                        </span>
+                      </td>
+                      <td>
+                        <span class="status-badge <%= company.active? ? 'status-success' : 'status-warning' %>">
+                          <%= company.status_name %>
+                        </span>
+                      </td>
+                      <td><%= company.created_at.strftime("%Y/%m/%d") %></td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          <% else %>
+            <p class="empty-message">まだ企業の登録がありません。</p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-section">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">🧪 最近の処方開発活動</h3>
+        </div>
+        <div class="card-content">
+          <% if @recent_formulations.any? %>
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>企画者</th>
+                    <th>会社</th>
+                    <th>商品タイプ</th>
+                    <th>ターゲット</th>
+                    <th>開発日時</th>
+                    <th>ステータス</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% @recent_formulations.each do |formulation| %>
+                    <tr>
+                      <td><%= formulation.user.display_name %></td>
+                      <td><%= formulation.user.company&.name || '未所属' %></td>
+                      <td><strong><%= formulation.product_type_name %></strong></td>
+                      <td>
+                        <%= formulation.skin_type_name %> / 
+                        <%= formulation.target_age_name %>
+                      </td>
+                      <td><%= formulation.created_at.strftime("%m/%d %H:%M") %></td>
+                      <td>
+                        <% if formulation.formulation.present? %>
+                          <span class="status-badge status-success">完了</span>
+                        <% else %>
+                          <span class="status-badge status-warning">処理中</span>
+                        <% end %>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          <% else %>
+            <p class="empty-message">まだ処方開発の活動がありません。</p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.admin-dashboard {
+  padding: var(--space-6);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-8);
+  
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+  }
+  
+  .subtitle {
+    color: var(--text-secondary);
+    margin: 0;
+  }
+}
+
+.admin-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.admin-section {
+  width: 100%;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--space-2);
+  
+  th, td {
+    padding: var(--space-3);
+    text-align: left;
+    border-bottom: 1px solid var(--border-light);
+  }
+  
+  th {
+    background-color: var(--bg-secondary);
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+  }
+  
+  td {
+    font-size: 14px;
+    color: var(--text-primary);
+  }
+  
+  tr:hover {
+    background-color: var(--bg-secondary);
+  }
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.empty-message {
+  text-align: center;
+  color: var(--text-secondary);
+  font-style: italic;
+  padding: var(--space-6);
+}
+
+@media (max-width: 768px) {
+  .admin-header {
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .admin-table {
+    font-size: 12px;
+    
+    th, td {
+      padding: var(--space-2);
+    }
+  }
+}
+</style>

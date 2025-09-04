@@ -1,0 +1,144 @@
+<div class="admin-auth-container">
+  <div class="admin-auth-header">
+    <h1>🏢 OEM管理システム</h1>
+    <p class="subtitle">管理者ログイン</p>
+  </div>
+
+  <div class="card">
+    <div class="card-content">
+      <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "auth-form" }) do |f| %>
+        <%= render "admins/shared/error_messages", resource: resource %>
+
+        <div class="form-group">
+          <%= f.label :email, "管理者メールアドレス", class: "form-label required" %>
+          <%= f.email_field :email, class: "form-input", placeholder: "admin@example.com", autofocus: true, autocomplete: "email", required: true %>
+        </div>
+
+        <div class="form-group">
+          <%= f.label :password, "パスワード", class: "form-label required" %>
+          <%= f.password_field :password, class: "form-input", placeholder: "パスワードを入力", autocomplete: "current-password", required: true %>
+        </div>
+
+        <% if devise_mapping.rememberable? %>
+          <div class="form-group">
+            <label class="checkbox-group">
+              <%= f.check_box :remember_me %>
+              <span class="checkbox-label">ログイン状態を保持する</span>
+            </label>
+          </div>
+        <% end %>
+
+        <div class="form-actions">
+          <%= f.submit "管理システムにログイン", class: "btn btn-primary btn-large" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="auth-links">
+    <p>アカウントをお持ちでない場合：</p>
+    <%= link_to "管理者登録", new_admin_registration_path, class: "btn btn-outline" %>
+    <%= link_to "管理者ポータルに戻る", admin_path, class: "btn btn-secondary" %>
+  </div>
+
+  <div class="admin-footer">
+    <p class="footer-text">© 2024 化粧品OEM管理システム</p>
+  </div>
+</div>
+
+<style>
+.admin-auth-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  padding: 2rem 1rem;
+}
+
+.admin-auth-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 0.5rem;
+  }
+  
+  .subtitle {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+  }
+}
+
+.admin-auth-container .card {
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.admin-auth-container .auth-links {
+  margin-top: 2rem;
+  text-align: center;
+  
+  p {
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 1rem;
+  }
+  
+  .btn {
+    margin: 0.5rem;
+  }
+  
+  .btn-outline {
+    background-color: transparent;
+    color: white;
+    border-color: rgba(255, 255, 255, 0.3);
+    
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-color: white;
+    }
+  }
+  
+  .btn-secondary {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: none;
+    
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+  }
+}
+
+.admin-footer {
+  margin-top: 2rem;
+  text-align: center;
+  
+  .footer-text {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.875rem;
+    margin: 0;
+  }
+}
+
+.admin-auth-container .form-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.admin-auth-container .btn-primary {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  border: none;
+  
+  &:hover {
+    background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+    transform: translateY(-1px);
+  }
+}
+</style>

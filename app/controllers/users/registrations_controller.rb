@@ -8,6 +8,26 @@ class Users::RegistrationsController < Devise::RegistrationsController
   def create
     build_resource(sign_up_params)
 
+    # 利用規約同意チェック
+    unless params[:user][:terms_accepted] == "1"
+      resource.errors.add(:base, "利用規約およびプライバシーポリシーに同意してください")
+      clean_up_passwords resource
+      set_minimum_password_length
+      respond_with resource
+      return
+    end
+
+    # 会社情報の必須チェック
+    if params[:user][:company_postal_code].blank? || 
+       params[:user][:company_prefecture].blank? || 
+       params[:user][:company_city_address].blank?
+      resource.errors.add(:base, "会社住所（郵便番号、都道府県、市区町村・番地）は必須項目です")
+      clean_up_passwords resource
+      set_minimum_password_length
+      respond_with resource
+      return
+    end
+
     # 会社情報の処理
     if resource.valid?
       begin
@@ -75,21 +95,19 @@ class Users::RegistrationsController < Devise::RegistrationsController
   # If you have extra params to permit, append them to the sanitizer.
   def configure_sign_up_params
     devise_parameter_sanitizer.permit(:sign_up, keys: [
-      :name, :company_name, :company_postal_code, :company_prefecture, 
-      :company_city_address, :company_building, :company_phone, 
-      :company_website, :company_employee_count, :terms_accepted
+      :name
     ])
   end
 
   # If you have extra params to permit, append them to the sanitizer.
   def configure_account_update_params
     devise_parameter_sanitizer.permit(:account_update, keys: [
-      :name, :age, :skin_type, :preferred_products, :bio, :avatar_url
+      :name
     ])
   end
 
   # The path used after sign up.
   def after_sign_up_path_for(resource)
-    mypage_path
+    dashboard_path
   end
 end
