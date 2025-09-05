@@ -1,0 +1,447 @@
+<div class="sample-detail-page">
+  <!-- パンくずナビ -->
+  <nav class="breadcrumb">
+    <%= link_to samples_path, class: "breadcrumb-link" do %>
+      ← サンプル一覧に戻る
+    <% end %>
+  </nav>
+
+  <div class="sample-detail-container">
+    <!-- サンプル画像 -->
+    <div class="sample-image-section">
+      <div class="sample-main-image">
+        <% if @sample.image_url.present? %>
+          <%= image_tag @sample.image_url, alt: @sample.name, class: "sample-image" %>
+        <% else %>
+          <div class="sample-placeholder">
+            <span class="placeholder-icon">🧴</span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- サンプル情報 -->
+    <div class="sample-info-section">
+      <div class="sample-header">
+        <div class="sample-badges">
+          <span class="product-type-badge"><%= @sample.product_type %></span>
+          <span class="status-badge <%= @sample.available? ? 'status-available' : 'status-unavailable' %>">
+            <%= @sample.available? ? '在庫あり' : '在庫なし' %>
+          </span>
+        </div>
+        <h1 class="sample-title"><%= @sample.name %></h1>
+      </div>
+
+      <div class="price-section">
+        <span class="price"><%= @sample.display_price %></span>
+      </div>
+
+      <div class="sample-description">
+        <h3>商品説明</h3>
+        <p><%= simple_format(@sample.description) %></p>
+      </div>
+
+      <div class="sample-specs">
+        <h3>商品仕様</h3>
+        <div class="specs-grid">
+          <div class="spec-item">
+            <span class="spec-label">商品タイプ:</span>
+            <span class="spec-value"><%= @sample.product_type %></span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">ステータス:</span>
+            <span class="spec-value"><%= @sample.available? ? '販売中' : '販売停止中' %></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 注文ボタン -->
+      <div class="order-section">
+        <% if @sample.available? %>
+          <%= link_to new_sample_order_path(sample_id: @sample.id), class: "btn btn-primary btn-lg order-btn" do %>
+            <span class="btn-icon">🛒</span>
+            このサンプルを注文する
+          <% end %>
+        <% else %>
+          <button class="btn btn-disabled btn-lg" disabled>
+            <span class="btn-icon">❌</span>
+            現在注文できません
+          </button>
+        <% end %>
+        
+        <p class="order-note">
+          ※ サンプル注文は無料です。送料のみご負担いただきます。
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 関連サンプル -->
+  <div class="related-samples">
+    <h3>同じカテゴリのサンプル</h3>
+    <% related_samples = Sample.where(product_type: @sample.product_type).where.not(id: @sample.id).limit(4) %>
+    <% if related_samples.any? %>
+      <div class="related-grid">
+        <% related_samples.each do |sample| %>
+          <div class="related-card">
+            <%= link_to sample_path(sample), class: "related-link" do %>
+              <div class="related-image">
+                <% if sample.image_url.present? %>
+                  <%= image_tag sample.image_url, alt: sample.name %>
+                <% else %>
+                  <div class="related-placeholder">🧴</div>
+                <% end %>
+              </div>
+              <div class="related-info">
+                <h4><%= sample.name %></h4>
+                <p class="related-price"><%= sample.display_price %></p>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="no-related">同じカテゴリの他のサンプルは現在ありません。</p>
+    <% end %>
+  </div>
+</div>
+
+<style>
+.sample-detail-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.breadcrumb {
+  margin-bottom: 2rem;
+}
+
+.breadcrumb-link {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.breadcrumb-link:hover {
+  color: #5a67d8;
+}
+
+.sample-detail-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  margin-bottom: 4rem;
+}
+
+.sample-image-section {
+  position: sticky;
+  top: 2rem;
+  height: fit-content;
+}
+
+.sample-main-image {
+  background: white;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sample-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sample-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+}
+
+.placeholder-icon {
+  font-size: 4rem;
+  opacity: 0.3;
+}
+
+.sample-info-section {
+  padding: 1rem 0;
+}
+
+.sample-header {
+  margin-bottom: 2rem;
+}
+
+.sample-badges {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.product-type-badge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.status-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.status-available {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-unavailable {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.sample-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.price-section {
+  padding: 2rem 0;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 2rem;
+}
+
+.price {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #059669;
+}
+
+.sample-description {
+  margin-bottom: 2rem;
+}
+
+.sample-description h3,
+.sample-specs h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 1rem;
+}
+
+.sample-description p {
+  color: #64748b;
+  line-height: 1.7;
+  font-size: 1rem;
+}
+
+.sample-specs {
+  background: #f8fafc;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.specs-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.spec-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.spec-item:last-child {
+  border-bottom: none;
+}
+
+.spec-label {
+  font-weight: 500;
+  color: #64748b;
+}
+
+.spec-value {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.order-section {
+  text-align: center;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.btn-lg {
+  padding: 1.25rem 2rem;
+  font-size: 1.125rem;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(5, 150, 105, 0.3);
+}
+
+.btn-disabled {
+  background: #e2e8f0;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.btn-icon {
+  font-size: 1.125rem;
+}
+
+.order-note {
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: #64748b;
+  font-style: italic;
+}
+
+.related-samples {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 3rem;
+}
+
+.related-samples h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.related-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.related-card {
+  background: white;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.related-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+.related-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.related-image {
+  height: 150px;
+  overflow: hidden;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.related-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.related-placeholder {
+  font-size: 2rem;
+  opacity: 0.3;
+}
+
+.related-info {
+  padding: 1rem;
+}
+
+.related-info h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 0.5rem 0;
+}
+
+.related-price {
+  color: #059669;
+  font-weight: 600;
+  margin: 0;
+}
+
+.no-related {
+  text-align: center;
+  color: #64748b;
+  font-style: italic;
+  padding: 2rem;
+}
+
+@media (max-width: 768px) {
+  .sample-detail-page {
+    padding: 1rem;
+  }
+  
+  .sample-detail-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .sample-image-section {
+    position: static;
+  }
+  
+  .sample-title {
+    font-size: 2rem;
+  }
+  
+  .price {
+    font-size: 1.5rem;
+  }
+  
+  .related-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+}
+</style>

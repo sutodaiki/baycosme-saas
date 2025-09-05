@@ -9,6 +9,8 @@ Rails.application.routes.draw do
   root 'home#index'
   
   resources :cosmetic_formulations, only: [:index, :new, :create, :show]
+  resources :samples, only: [:index, :show]
+  resources :sample_orders, only: [:new, :create, :show, :index]
   
   # Admin routes
   get '/admin', to: 'admin/home#index'

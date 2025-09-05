@@ -1,7 +1,8 @@
 class SampleOrder < ApplicationRecord
   belongs_to :user
-  belongs_to :company
-  belongs_to :cosmetic_formulation
+  belongs_to :company, optional: true
+  belongs_to :cosmetic_formulation, optional: true
+  belongs_to :sample, optional: true
 
   STATUSES = [
     ['注文受付', 'pending'],
@@ -22,10 +23,14 @@ class SampleOrder < ApplicationRecord
   validates :quantity, presence: true, numericality: { greater_than: 0, less_than_or_equal_to: 100 }
   validates :status, inclusion: { in: STATUSES.map(&:last) }
   validates :priority, inclusion: { in: PRIORITIES.map(&:last) }
-  validates :delivery_address, presence: true
-  validates :contact_name, presence: true
-  validates :contact_phone, presence: true
   validates :notes, length: { maximum: 1000 }
+  
+  # Conditional validations based on address type
+  validates :delivery_address, presence: true, unless: :use_company_address?
+  validates :delivery_postal_code, presence: true, unless: :use_company_address?
+  validates :delivery_prefecture, presence: true, unless: :use_company_address?
+  validates :delivery_city, presence: true, unless: :use_company_address?
+  validates :delivery_street, presence: true, unless: :use_company_address?
 
   scope :pending, -> { where(status: 'pending') }
   scope :in_progress, -> { where(status: ['manufacturing', 'quality_check', 'preparing_shipment']) }
@@ -76,14 +81,45 @@ class SampleOrder < ApplicationRecord
     (updated_at || created_at) + days_to_add.days
   end
 
+  def use_company_address?
+    use_company_address == true
+  end
+  
+  def delivery_full_address
+    if use_company_address?
+      company = user&.company
+      return "会社情報が設定されていません" unless company
+      
+      address_parts = []
+      address_parts << "〒#{company.postal_code}" if company.postal_code.present?
+      address_parts << company.address if company.address.present?
+      address_parts.join("\n")
+    else
+      address_parts = []
+      address_parts << "〒#{delivery_postal_code}" if delivery_postal_code.present?
+      
+      location = [delivery_prefecture, delivery_city, delivery_street].compact.join('')
+      address_parts << location if location.present?
+      address_parts << delivery_building if delivery_building.present?
+      
+      address_parts.join("\n")
+    end
+  end
+
   def total_cost
-    base_cost = case cosmetic_formulation&.product_type
-                when 'cleanser' then 1500
-                when 'toner' then 2000
-                when 'serum' then 3000
-                when 'moisturizer' then 2500
-                when 'sunscreen' then 2800
-                else 2000
+    base_cost = if sample&.price.present?
+                  sample.price
+                elsif cosmetic_formulation&.product_type.present?
+                  case cosmetic_formulation.product_type
+                  when 'cleanser' then 1500
+                  when 'toner' then 2000
+                  when 'serum' then 3000
+                  when 'moisturizer' then 2500
+                  when 'sunscreen' then 2800
+                  else 2000
+                  end
+                else
+                  2000
                 end
     
     priority_multiplier = case priority

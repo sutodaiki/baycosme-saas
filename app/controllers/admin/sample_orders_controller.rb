@@ -3,6 +3,7 @@
 class Admin::SampleOrdersController < ApplicationController
   layout 'admin'
   before_action :authenticate_admin!
+  before_action :set_sample_order, only: [:show, :edit, :update, :destroy]
 
   def index
     @sample_orders = SampleOrder.includes(:user, :company, :cosmetic_formulation)
@@ -64,16 +65,12 @@ class Admin::SampleOrdersController < ApplicationController
   end
 
   def show
-    @sample_order = SampleOrder.find(params[:id])
   end
 
   def edit
-    @sample_order = SampleOrder.find(params[:id])
   end
 
   def update
-    @sample_order = SampleOrder.find(params[:id])
-    
     if @sample_order.update(sample_order_params)
       # ステータス変更時の処理
       if sample_order_params[:status] && @sample_order.status_changed?
@@ -87,8 +84,6 @@ class Admin::SampleOrdersController < ApplicationController
   end
 
   def destroy
-    @sample_order = SampleOrder.find(params[:id])
-    
     if @sample_order.can_cancel?
       @sample_order.update(status: 'cancelled')
       redirect_to admin_sample_orders_path, notice: 'サンプル注文がキャンセルされました。'
@@ -98,6 +93,10 @@ class Admin::SampleOrdersController < ApplicationController
   end
 
   private
+
+  def set_sample_order
+    @sample_order = SampleOrder.find(params[:id])
+  end
 
   def sample_order_params
     params.require(:sample_order).permit(:status, :priority, :quantity, :notes,

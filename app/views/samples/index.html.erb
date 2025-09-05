@@ -1,0 +1,387 @@
+<div class="samples-page">
+  <!-- ページヘッダー -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">🧪 サンプル一覧</h1>
+      <p class="page-description">お試しいただけるサンプル商品の一覧です</p>
+    </div>
+  </div>
+
+  <!-- 検索・フィルターエリア -->
+  <div class="search-section">
+    <%= form_with url: samples_path, method: :get, class: "search-form", local: true do |f| %>
+      <div class="search-inputs">
+        <div class="search-field">
+          <%= f.text_field :search, placeholder: "サンプル名・説明で検索", value: params[:search], class: "search-input" %>
+        </div>
+        
+        <div class="filter-field">
+          <%= f.select :product_type, options_for_select([['すべての商品タイプ', '']] + @product_types.map { |type| [type, type] }), { selected: params[:product_type] }, { class: "filter-select" } %>
+        </div>
+        
+        <div class="search-actions">
+          <%= f.submit "検索", class: "btn btn-primary search-btn" %>
+          <%= link_to "クリア", samples_path, class: "btn btn-outline clear-btn" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- サンプル一覧 -->
+  <div class="samples-grid">
+    <% @samples.each do |sample| %>
+      <div class="sample-card">
+        <div class="sample-image">
+          <% if sample.image_url.present? %>
+            <%= image_tag sample.image_url, alt: sample.name, class: "sample-img" %>
+          <% else %>
+            <div class="sample-placeholder">
+              <span class="placeholder-icon">🧴</span>
+            </div>
+          <% end %>
+        </div>
+        
+        <div class="sample-content">
+          <div class="sample-header">
+            <h3 class="sample-name"><%= sample.name %></h3>
+            <span class="product-type-badge"><%= sample.product_type %></span>
+          </div>
+          
+          <p class="sample-description"><%= truncate(sample.description, length: 100) %></p>
+          
+          <div class="sample-footer">
+            <div class="price-section">
+              <span class="price"><%= sample.display_price %></span>
+            </div>
+            
+            <div class="sample-actions">
+              <%= link_to "詳細", sample_path(sample), class: "btn btn-outline btn-sm" %>
+              <% if sample.available? %>
+                <%= link_to "サンプル注文", new_sample_order_path(sample_id: sample.id), class: "btn btn-primary btn-sm order-btn" %>
+              <% else %>
+                <span class="btn btn-disabled btn-sm">在庫なし</span>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- 結果なしの場合 -->
+  <% if @samples.empty? %>
+    <div class="empty-state">
+      <div class="empty-icon">🔍</div>
+      <h3>該当するサンプルが見つかりません</h3>
+      <p>検索条件を変更してお試しください。</p>
+      <%= link_to "全てのサンプルを見る", samples_path, class: "btn btn-primary" %>
+    </div>
+  <% end %>
+
+  <!-- ページネーション -->
+  <% if @samples.respond_to?(:current_page) %>
+    <div class="pagination-wrapper">
+      <%= paginate @samples %>
+    </div>
+  <% end %>
+</div>
+
+<style>
+.samples-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.page-header {
+  margin-bottom: 2.5rem;
+}
+
+.header-content {
+  text-align: center;
+  padding: 2rem 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 1rem;
+  color: white;
+}
+
+.page-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+}
+
+.page-description {
+  font-size: 1.1rem;
+  margin: 0;
+  opacity: 0.9;
+}
+
+.search-section {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.search-form {
+  width: 100%;
+}
+
+.search-inputs {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 1rem;
+  align-items: end;
+}
+
+.search-field, .filter-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.search-input, .filter-select {
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-input:focus, .filter-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.search-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-outline {
+  background: transparent;
+  color: #667eea;
+  border-color: #667eea;
+}
+
+.btn-outline:hover {
+  background: #667eea;
+  color: white;
+}
+
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+}
+
+.btn-disabled {
+  background: #e2e8f0;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.samples-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.sample-card {
+  background: white;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid #f1f5f9;
+}
+
+.sample-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+.sample-image {
+  height: 200px;
+  overflow: hidden;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sample-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sample-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+}
+
+.placeholder-icon {
+  font-size: 3rem;
+  opacity: 0.5;
+}
+
+.sample-content {
+  padding: 1.5rem;
+}
+
+.sample-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.sample-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+  flex: 1;
+}
+
+.product-type-badge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-left: 1rem;
+}
+
+.sample-description {
+  color: #64748b;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.sample-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.price {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #059669;
+}
+
+.sample-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.order-btn {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  border-color: transparent;
+}
+
+.order-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #64748b;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 3rem;
+}
+
+@media (max-width: 768px) {
+  .samples-page {
+    padding: 1rem;
+  }
+  
+  .search-inputs {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .search-actions {
+    justify-content: stretch;
+  }
+  
+  .search-actions .btn {
+    flex: 1;
+  }
+  
+  .samples-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .sample-footer {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  
+  .sample-actions {
+    justify-content: stretch;
+  }
+  
+  .sample-actions .btn {
+    flex: 1;
+  }
+}
+</style>

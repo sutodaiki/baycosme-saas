@@ -54,6 +54,20 @@
               </li>
               
               <li class="nav-item">
+                <%= link_to samples_path, class: "nav-link #{'active' if controller_name == 'samples'}" do %>
+                  <span class="nav-icon">🧪</span>
+                  <span class="nav-text">サンプル一覧</span>
+                <% end %>
+              </li>
+              
+              <li class="nav-item">
+                <%= link_to sample_orders_path, class: "nav-link #{'active' if controller_name == 'sample_orders'}" do %>
+                  <span class="nav-icon">📋</span>
+                  <span class="nav-text">サンプル注文</span>
+                <% end %>
+              </li>
+              
+              <li class="nav-item">
                 <%= link_to edit_user_registration_path, class: "nav-link #{'active' if controller_name == 'registrations' && action_name == 'edit'}" do %>
                   <span class="nav-icon">⚙️</span>
                   <span class="nav-text">設定</span>
@@ -100,6 +114,20 @@
                     📚 処方履歴
                   <% elsif action_name == 'show' %>
                     🧪 処方詳細
+                  <% end %>
+                <% when 'samples' %>
+                  <% if action_name == 'index' %>
+                    🧪 サンプル一覧
+                  <% elsif action_name == 'show' %>
+                    🧴 サンプル詳細
+                  <% end %>
+                <% when 'sample_orders' %>
+                  <% if action_name == 'index' %>
+                    📋 サンプル注文履歴
+                  <% elsif action_name == 'new' %>
+                    🛒 サンプル注文
+                  <% elsif action_name == 'show' %>
+                    📋 注文詳細
                   <% end %>
                 <% when 'home' %>
                   🏠 ホーム

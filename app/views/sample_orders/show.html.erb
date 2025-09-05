@@ -1,0 +1,641 @@
+<div class="sample-order-detail-page">
+  <!-- パンくずナビ -->
+  <nav class="breadcrumb">
+    <%= link_to sample_orders_path, class: "breadcrumb-link" do %>
+      ← サンプル注文履歴に戻る
+    <% end %>
+  </nav>
+
+  <div class="order-detail-container">
+    <!-- 注文ヘッダー -->
+    <div class="order-header-card">
+      <div class="header-content">
+        <div class="order-title-section">
+          <h1 class="order-title">
+            <span class="order-icon">📋</span>
+            サンプル注文詳細
+          </h1>
+          <div class="order-meta">
+            <span class="order-id">注文番号: #<%= @sample_order.id %></span>
+            <span class="order-date">注文日: <%= @sample_order.created_at.strftime('%Y年%m月%d日 %H:%M') %></span>
+          </div>
+        </div>
+        <div class="order-status-section">
+          <span class="status-badge status-<%= @sample_order.status %>">
+            <%= @sample_order.status_name %>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="order-content">
+      <!-- サンプル情報 -->
+      <div class="content-section sample-section">
+        <h3 class="section-title">🧴 注文商品</h3>
+        <div class="sample-info">
+          <div class="sample-image">
+            <% if @sample_order.sample&.image_url.present? %>
+              <%= image_tag @sample_order.sample.image_url, alt: @sample_order.sample.name %>
+            <% else %>
+              <div class="sample-placeholder">🧴</div>
+            <% end %>
+          </div>
+          <div class="sample-details">
+            <h4 class="sample-name">
+              <% if @sample_order.sample %>
+                <%= @sample_order.sample.name %>
+              <% elsif @sample_order.cosmetic_formulation %>
+                <%= @sample_order.cosmetic_formulation.product_name %>
+              <% else %>
+                カスタムサンプル
+              <% end %>
+            </h4>
+            <div class="sample-meta">
+              <% if @sample_order.sample&.product_type %>
+                <span class="product-type"><%= @sample_order.sample.product_type %></span>
+              <% end %>
+              <% if @sample_order.sample %>
+                <%= link_to "商品詳細を見る", sample_path(@sample_order.sample), class: "sample-link" %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 注文詳細 -->
+      <div class="content-section order-details-section">
+        <h3 class="section-title">📊 注文詳細</h3>
+        <div class="details-grid">
+          <div class="detail-card">
+            <div class="detail-icon">📦</div>
+            <div class="detail-content">
+              <span class="detail-label">数量</span>
+              <span class="detail-value"><%= @sample_order.quantity %>個</span>
+            </div>
+          </div>
+          
+          <div class="detail-card">
+            <div class="detail-icon">⚡</div>
+            <div class="detail-content">
+              <span class="detail-label">優先度</span>
+              <span class="detail-value"><%= @sample_order.priority_name %></span>
+            </div>
+          </div>
+          
+          <div class="detail-card">
+            <div class="detail-icon">💰</div>
+            <div class="detail-content">
+              <span class="detail-label">料金</span>
+              <span class="detail-value">¥<%= @sample_order.total_cost.to_s(:delimited) %></span>
+            </div>
+          </div>
+          
+          <% if @sample_order.estimated_completion_date %>
+            <div class="detail-card">
+              <div class="detail-icon">📅</div>
+              <div class="detail-content">
+                <span class="detail-label">完了予定日</span>
+                <span class="detail-value"><%= @sample_order.estimated_completion_date.strftime('%Y年%m月%d日') %></span>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- 配送先情報 -->
+      <% if @sample_order.delivery_address.present? %>
+        <div class="content-section delivery-section">
+          <h3 class="section-title">🚚 配送先情報</h3>
+          <div class="delivery-info">
+            <pre class="delivery-address"><%= @sample_order.delivery_address %></pre>
+          </div>
+        </div>
+      <% end %>
+
+      <!-- 備考・要望 -->
+      <% if @sample_order.notes.present? %>
+        <div class="content-section notes-section">
+          <h3 class="section-title">📝 備考・要望</h3>
+          <div class="notes-content">
+            <p><%= simple_format(@sample_order.notes) %></p>
+          </div>
+        </div>
+      <% end %>
+
+      <!-- ステータス履歴 -->
+      <div class="content-section status-history-section">
+        <h3 class="section-title">📈 ステータス履歴</h3>
+        <div class="status-timeline">
+          <div class="timeline-item <%= 'completed' if @sample_order.status != 'pending' %>">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content">
+              <h4>注文受付</h4>
+              <p>注文が受け付けられました</p>
+              <span class="timeline-date"><%= @sample_order.created_at.strftime('%Y年%m月%d日 %H:%M') %></span>
+            </div>
+          </div>
+          
+          <% if %w[manufacturing quality_check preparing_shipment shipped delivered].include?(@sample_order.status) %>
+            <div class="timeline-item <%= 'completed' if @sample_order.status != 'manufacturing' %>">
+              <div class="timeline-marker"></div>
+              <div class="timeline-content">
+                <h4>製造開始</h4>
+                <p>サンプルの製造が開始されました</p>
+                <span class="timeline-date">処理中...</span>
+              </div>
+            </div>
+          <% end %>
+          
+          <% if %w[quality_check preparing_shipment shipped delivered].include?(@sample_order.status) %>
+            <div class="timeline-item <%= 'completed' if @sample_order.status != 'quality_check' %>">
+              <div class="timeline-marker"></div>
+              <div class="timeline-content">
+                <h4>品質確認</h4>
+                <p>製品の品質確認を行っています</p>
+                <span class="timeline-date">処理中...</span>
+              </div>
+            </div>
+          <% end %>
+          
+          <% if %w[preparing_shipment shipped delivered].include?(@sample_order.status) %>
+            <div class="timeline-item <%= 'completed' if @sample_order.status != 'preparing_shipment' %>">
+              <div class="timeline-marker"></div>
+              <div class="timeline-content">
+                <h4>発送準備</h4>
+                <p>発送の準備を行っています</p>
+                <span class="timeline-date">処理中...</span>
+              </div>
+            </div>
+          <% end %>
+          
+          <% if %w[shipped delivered].include?(@sample_order.status) %>
+            <div class="timeline-item <%= 'completed' if @sample_order.status != 'shipped' %>">
+              <div class="timeline-marker"></div>
+              <div class="timeline-content">
+                <h4>発送完了</h4>
+                <p>サンプルを発送しました</p>
+                <span class="timeline-date">処理中...</span>
+              </div>
+            </div>
+          <% end %>
+          
+          <% if @sample_order.status == 'delivered' %>
+            <div class="timeline-item completed">
+              <div class="timeline-marker"></div>
+              <div class="timeline-content">
+                <h4>配達完了</h4>
+                <p>サンプルの配達が完了しました</p>
+                <span class="timeline-date">完了</span>
+              </div>
+            </div>
+          <% end %>
+          
+          <% if @sample_order.status == 'cancelled' %>
+            <div class="timeline-item cancelled">
+              <div class="timeline-marker"></div>
+              <div class="timeline-content">
+                <h4>注文キャンセル</h4>
+                <p>注文がキャンセルされました</p>
+                <span class="timeline-date"><%= @sample_order.updated_at.strftime('%Y年%m月%d日 %H:%M') %></span>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- アクション -->
+      <div class="content-section actions-section">
+        <div class="action-buttons">
+          <% if @sample_order.can_cancel? %>
+            <%= link_to "#", class: "btn btn-danger", 
+                onclick: "return confirm('本当にこの注文をキャンセルしますか？')" do %>
+              <span class="btn-icon">❌</span>
+              注文をキャンセル
+            <% end %>
+          <% end %>
+          
+          <%= link_to sample_orders_path, class: "btn btn-outline" do %>
+            <span class="btn-icon">📋</span>
+            注文履歴一覧
+          <% end %>
+          
+          <%= link_to samples_path, class: "btn btn-primary" do %>
+            <span class="btn-icon">🧪</span>
+            他のサンプルを見る
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.sample-order-detail-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.breadcrumb {
+  margin-bottom: 2rem;
+}
+
+.breadcrumb-link {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.breadcrumb-link:hover {
+  color: #5a67d8;
+}
+
+.order-header-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.order-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.order-icon {
+  font-size: 2rem;
+}
+
+.order-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  opacity: 0.9;
+}
+
+.order-status-section {
+  margin-left: 1rem;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.order-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.content-section {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.sample-info {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.sample-image {
+  width: 100px;
+  height: 100px;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sample-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sample-placeholder {
+  font-size: 3rem;
+  opacity: 0.3;
+}
+
+.sample-details {
+  flex: 1;
+}
+
+.sample-name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 0.5rem 0;
+}
+
+.sample-meta {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.product-type {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.sample-link {
+  color: #667eea;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.sample-link:hover {
+  text-decoration: underline;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.detail-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: #f8fafc;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+}
+
+.detail-icon {
+  font-size: 2rem;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.detail-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.detail-value {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.delivery-info {
+  background: #f0f9ff;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  border-left: 4px solid #0ea5e9;
+}
+
+.delivery-address {
+  margin: 0;
+  font-family: inherit;
+  color: #0c4a6e;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.notes-content {
+  background: #fef7ff;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  border-left: 4px solid #a855f7;
+  color: #581c87;
+  line-height: 1.6;
+}
+
+.status-timeline {
+  position: relative;
+  padding-left: 2rem;
+}
+
+.status-timeline::before {
+  content: '';
+  position: absolute;
+  left: 1rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #e2e8f0;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+.timeline-marker {
+  position: absolute;
+  left: -2rem;
+  top: 0.25rem;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: #e2e8f0;
+  border: 2px solid white;
+  box-shadow: 0 0 0 2px #e2e8f0;
+}
+
+.timeline-item.completed .timeline-marker {
+  background: #059669;
+  box-shadow: 0 0 0 2px #059669;
+}
+
+.timeline-item.cancelled .timeline-marker {
+  background: #ef4444;
+  box-shadow: 0 0 0 2px #ef4444;
+}
+
+.timeline-content h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 0.25rem 0;
+}
+
+.timeline-content p {
+  color: #64748b;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.5;
+}
+
+.timeline-date {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-outline {
+  background: transparent;
+  color: #667eea;
+  border-color: #667eea;
+}
+
+.btn-outline:hover {
+  background: #667eea;
+  color: white;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: white;
+  border-color: #ef4444;
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.btn-icon {
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  .sample-order-detail-page {
+    padding: 1rem;
+  }
+  
+  .order-header-card {
+    padding: 1.5rem;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .order-status-section {
+    margin-left: 0;
+    align-self: flex-start;
+  }
+  
+  .content-section {
+    padding: 1.5rem;
+  }
+  
+  .sample-info {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: center;
+  }
+  
+  .sample-details {
+    width: 100%;
+  }
+  
+  .details-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .detail-card {
+    padding: 1rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .timeline-item {
+    margin-bottom: 1.5rem;
+  }
+}
+</style>

@@ -135,17 +135,27 @@
                 </td>
                 <td>
                   <div class="client-info">
-                    <strong><%= order.company.name %></strong>
-                    <div class="contact-name"><%= order.contact_name %></div>
+                    <strong><%= order.company&.name || '未設定' %></strong>
+                    <div class="contact-name"><%= order.contact_name || order.user.display_name %></div>
                     <small class="text-muted"><%= order.user.display_name %></small>
                   </div>
                 </td>
                 <td>
                   <div class="product-info">
-                    <strong><%= order.cosmetic_formulation.product_type_name %></strong>
-                    <small class="text-muted d-block">
-                      <%= truncate(order.cosmetic_formulation.skin_type_name, length: 15) %>
-                    </small>
+                    <% if order.sample %>
+                      <strong><%= order.sample.product_type %></strong>
+                      <small class="text-muted d-block">
+                        <%= truncate(order.sample.name, length: 15) %>
+                      </small>
+                    <% elsif order.cosmetic_formulation %>
+                      <strong><%= order.cosmetic_formulation.product_type_name %></strong>
+                      <small class="text-muted d-block">
+                        <%= truncate(order.cosmetic_formulation.skin_type_name, length: 15) %>
+                      </small>
+                    <% else %>
+                      <strong>カスタム</strong>
+                      <small class="text-muted d-block">詳細未設定</small>
+                    <% end %>
                   </div>
                 </td>
                 <td class="quantity-cell">
