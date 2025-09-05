@@ -188,7 +188,15 @@
                   <%= link_to "##{order.id}", admin_sample_order_path(order), class: "order-link" %>
                 </td>
                 <td><%= order.contact_name %></td>
-                <td><%= order.cosmetic_formulation.product_type_name %></td>
+                <td>
+                  <% if order.sample %>
+                    <%= order.sample.product_type %>
+                  <% elsif order.cosmetic_formulation %>
+                    <%= order.cosmetic_formulation.product_type_name %>
+                  <% else %>
+                    カスタム
+                  <% end %>
+                </td>
                 <td><%= order.quantity %>個</td>
                 <td>
                   <span class="priority-badge priority-<%= order.priority %>">
