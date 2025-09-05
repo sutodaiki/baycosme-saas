@@ -1,0 +1,740 @@
+<div class="page-header">
+  <h1 class="page-title">🛒 正式発注依頼</h1>
+  <p class="page-description">大量発注・本格製造のご依頼フォーム</p>
+</div>
+
+<div class="form-container">
+  <%= form_with model: @formal_order, local: true, class: "formal-order-form" do |f| %>
+    <% if @formal_order.errors.any? %>
+      <div class="error-messages">
+        <h4>入力エラーがあります:</h4>
+        <ul>
+          <% @formal_order.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <!-- Product Selection Section -->
+    <div class="form-section">
+      <h3 class="section-title">📦 商品選択</h3>
+      
+      <% if @formal_order.sample || @formal_order.cosmetic_formulation %>
+        <!-- Pre-selected product -->
+        <div class="selected-product">
+          <% if @formal_order.sample %>
+            <%= f.hidden_field :sample_id %>
+            <div class="product-card selected">
+              <div class="product-info">
+                <h4><%= @formal_order.sample.name %></h4>
+                <div class="product-meta">
+                  <span class="product-type"><%= @formal_order.sample.product_type %></span>
+                  <span class="product-price"><%= @formal_order.sample.display_price %></span>
+                </div>
+                <p class="product-description"><%= @formal_order.sample.description %></p>
+              </div>
+            </div>
+          <% elsif @formal_order.cosmetic_formulation %>
+            <%= f.hidden_field :cosmetic_formulation_id %>
+            <div class="product-card selected">
+              <div class="product-info">
+                <h4><%= @formal_order.cosmetic_formulation.product_name %></h4>
+                <div class="product-meta">
+                  <span class="product-type"><%= @formal_order.cosmetic_formulation.product_type_name %></span>
+                  <span class="skin-type"><%= @formal_order.cosmetic_formulation.skin_type_name %></span>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <!-- Manual product selection -->
+        <div class="product-selection">
+          <div class="selection-tabs">
+            <button type="button" id="sample-tab" class="tab-btn active" onclick="switchTab('sample')">汎用サンプル</button>
+            <button type="button" id="formulation-tab" class="tab-btn" onclick="switchTab('formulation')">カスタム処方</button>
+          </div>
+          
+          <div id="sample-selection" class="tab-content active">
+            <%= f.select :sample_id, options_from_collection_for_select(Sample.available, :id, :name, @formal_order.sample_id), 
+                        { prompt: 'サンプルを選択してください' }, { class: 'product-select', onchange: 'updateProductInfo()' } %>
+          </div>
+          
+          <div id="formulation-selection" class="tab-content">
+            <%= f.select :cosmetic_formulation_id, options_from_collection_for_select(current_user.cosmetic_formulations, :id, :product_name, @formal_order.cosmetic_formulation_id), 
+                        { prompt: '処方を選択してください' }, { class: 'product-select', onchange: 'updateProductInfo()' } %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Order Details Section -->
+    <div class="form-section">
+      <h3 class="section-title">📋 発注内容</h3>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <%= f.label :quantity, "発注数量", class: "form-label required" %>
+          <%= f.number_field :quantity, min: 1, max: 10000, value: @formal_order.quantity || 100, class: "form-control", required: true %>
+          <small class="form-help">最小発注数量: 100個</small>
+        </div>
+        
+        <div class="form-group">
+          <%= f.label :priority, "優先度", class: "form-label" %>
+          <%= f.select :priority, options_from_collection_for_select(FormalOrder::PRIORITIES.map { |name, value| OpenStruct.new(name: name, value: value) }, :value, :name, @formal_order.priority), 
+                      {}, { class: "form-control" } %>
+          <small class="form-help">緊急・高優先度は追加料金が発生します</small>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <%= f.label :estimated_delivery_date, "希望納期", class: "form-label" %>
+        <%= f.date_field :estimated_delivery_date, min: 2.weeks.from_now.strftime('%Y-%m-%d'), class: "form-control" %>
+        <small class="form-help">通常の製造期間は2-4週間です</small>
+      </div>
+    </div>
+
+    <!-- Contact Information Section -->
+    <div class="form-section">
+      <h3 class="section-title">📞 担当者情報</h3>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <%= f.label :contact_name, "担当者氏名", class: "form-label required" %>
+          <%= f.text_field :contact_name, class: "form-control", required: true %>
+        </div>
+        
+        <div class="form-group">
+          <%= f.label :contact_phone, "電話番号", class: "form-label required" %>
+          <%= f.text_field :contact_phone, class: "form-control", required: true, placeholder: "090-1234-5678" %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delivery Address Section -->
+    <div class="form-section">
+      <h3 class="section-title">🚚 配送先住所</h3>
+      
+      <div class="address-selection">
+        <div class="radio-group">
+          <%= f.radio_button :use_company_address, true, id: 'company_address', checked: @formal_order.use_company_address?, onchange: 'toggleAddressForm()' %>
+          <%= f.label :use_company_address, "会社住所と同じ", for: 'company_address', class: "radio-label" %>
+        </div>
+        
+        <div class="radio-group">
+          <%= f.radio_button :use_company_address, false, id: 'different_address', onchange: 'toggleAddressForm()' %>
+          <%= f.label :use_company_address, "別の住所を指定", for: 'different_address', class: "radio-label" %>
+        </div>
+      </div>
+      
+      <!-- Company Address Display -->
+      <div id="company-address-display" class="company-address-display" style="<%= 'display: none;' unless @formal_order.use_company_address? %>">
+        <div class="address-info">
+          <h4>会社住所</h4>
+          <% if current_user.company %>
+            <div class="address-content">
+              <p><strong><%= current_user.company.name %></strong></p>
+              <% if current_user.company.postal_code.present? %>
+                <p>〒<%= current_user.company.postal_code %></p>
+              <% end %>
+              <% if current_user.company.address.present? %>
+                <p><%= current_user.company.address %></p>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="address-warning">
+              <p>⚠️ 会社情報が登録されていません</p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+      
+      <!-- Different Address Form -->
+      <div id="different-address-form" class="address-form" style="<%= 'display: none;' if @formal_order.use_company_address? %>">
+        <div class="form-group">
+          <%= f.label :delivery_postal_code, "郵便番号", class: "form-label" %>
+          <%= f.text_field :delivery_postal_code, class: "form-control", placeholder: "1234567" %>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <%= f.label :delivery_prefecture, "都道府県", class: "form-label" %>
+            <%= f.select :delivery_prefecture, 
+                options_for_select([
+                  ['北海道', '北海道'], ['青森県', '青森県'], ['岩手県', '岩手県'], ['宮城県', '宮城県'], ['秋田県', '秋田県'], ['山形県', '山形県'], ['福島県', '福島県'],
+                  ['茨城県', '茨城県'], ['栃木県', '栃木県'], ['群馬県', '群馬県'], ['埼玉県', '埼玉県'], ['千葉県', '千葉県'], ['東京都', '東京都'], ['神奈川県', '神奈川県'],
+                  ['新潟県', '新潟県'], ['富山県', '富山県'], ['石川県', '石川県'], ['福井県', '福井県'], ['山梨県', '山梨県'], ['長野県', '長野県'], ['岐阜県', '岐阜県'], ['静岡県', '静岡県'], ['愛知県', '愛知県'],
+                  ['三重県', '三重県'], ['滋賀県', '滋賀県'], ['京都府', '京都府'], ['大阪府', '大阪府'], ['兵庫県', '兵庫県'], ['奈良県', '奈良県'], ['和歌山県', '和歌山県'],
+                  ['鳥取県', '鳥取県'], ['島根県', '島根県'], ['岡山県', '岡山県'], ['広島県', '広島県'], ['山口県', '山口県'], ['徳島県', '徳島県'], ['香川県', '香川県'], ['愛媛県', '愛媛県'], ['高知県', '高知県'],
+                  ['福岡県', '福岡県'], ['佐賀県', '佐賀県'], ['長崎県', '長崎県'], ['熊本県', '熊本県'], ['大分県', '大分県'], ['宮崎県', '宮崎県'], ['鹿児島県', '鹿児島県'], ['沖縄県', '沖縄県']
+                ], @formal_order.delivery_prefecture), 
+                { prompt: '都道府県を選択' }, { class: 'form-control' } %>
+          </div>
+          
+          <div class="form-group">
+            <%= f.label :delivery_city, "市区町村", class: "form-label" %>
+            <%= f.text_field :delivery_city, class: "form-control", placeholder: "渋谷区" %>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <%= f.label :delivery_street, "町名・番地", class: "form-label" %>
+          <%= f.text_field :delivery_street, class: "form-control", placeholder: "神南1-2-3" %>
+        </div>
+        
+        <div class="form-group">
+          <%= f.label :delivery_building, "建物名・部屋番号", class: "form-label" %>
+          <%= f.text_field :delivery_building, class: "form-control", placeholder: "○○ビル 101号室" %>
+          <small class="form-help">建物名や部屋番号がある場合のみご入力ください</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notes Section -->
+    <div class="form-section">
+      <h3 class="section-title">📝 要望・備考</h3>
+      
+      <div class="form-group">
+        <%= f.label :notes, "特別な要望や備考", class: "form-label" %>
+        <%= f.text_area :notes, rows: 5, class: "form-control", 
+            placeholder: "・特定の成分の調整希望\n・パッケージデザインの要望\n・納期に関する特別な事情\n・その他のご要望" %>
+        <small class="form-help">最大2000文字まで。詳細な要望により正確な見積もりが可能です。</small>
+      </div>
+    </div>
+
+    <!-- Cost Estimate Section -->
+    <div class="form-section estimate-section">
+      <h3 class="section-title">💰 概算見積もり</h3>
+      
+      <div class="estimate-display">
+        <div class="estimate-row">
+          <span class="estimate-label">製品単価:</span>
+          <span class="estimate-value" id="unit-price">算出中...</span>
+        </div>
+        <div class="estimate-row">
+          <span class="estimate-label">製造コスト:</span>
+          <span class="estimate-value" id="manufacturing-cost">算出中...</span>
+        </div>
+        <div class="estimate-row">
+          <span class="estimate-label">配送料:</span>
+          <span class="estimate-value" id="shipping-cost">算出中...</span>
+        </div>
+        <div class="estimate-row total">
+          <span class="estimate-label">概算総額:</span>
+          <span class="estimate-value" id="total-cost">算出中...</span>
+        </div>
+      </div>
+      
+      <div class="estimate-note">
+        <p>⚠️ これは概算見積もりです。正確な金額は担当者が詳細を確認後にご連絡いたします。</p>
+      </div>
+    </div>
+
+    <!-- Submit Section -->
+    <div class="form-actions">
+      <%= f.submit "正式発注依頼を送信", class: "btn btn-primary btn-lg" %>
+      <%= link_to "キャンセル", formal_orders_path, class: "btn btn-outline btn-lg" %>
+    </div>
+  <% end %>
+</div>
+
+<script>
+let currentTab = 'sample';
+
+function switchTab(tab) {
+  // Update tab buttons
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.getElementById(tab + '-tab').classList.add('active');
+  
+  // Update tab content
+  document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+  document.getElementById(tab + '-selection').classList.add('active');
+  
+  // Clear the other selection
+  if (tab === 'sample') {
+    document.querySelector('select[name="formal_order[cosmetic_formulation_id]"]').value = '';
+  } else {
+    document.querySelector('select[name="formal_order[sample_id]"]').value = '';
+  }
+  
+  currentTab = tab;
+  updateEstimate();
+}
+
+function toggleAddressForm() {
+  const companyAddressRadio = document.getElementById('company_address');
+  const differentAddressRadio = document.getElementById('different_address');
+  const companyAddressDisplay = document.getElementById('company-address-display');
+  const differentAddressForm = document.getElementById('different-address-form');
+  
+  if (companyAddressRadio.checked) {
+    companyAddressDisplay.style.display = 'block';
+    differentAddressForm.style.display = 'none';
+    
+    // Remove required attribute from address fields
+    const addressFields = differentAddressForm.querySelectorAll('input, select');
+    addressFields.forEach(field => {
+      field.removeAttribute('required');
+    });
+  } else {
+    companyAddressDisplay.style.display = 'none';
+    differentAddressForm.style.display = 'block';
+    
+    // Add required attribute to address fields (except building)
+    const addressFields = differentAddressForm.querySelectorAll('input, select');
+    addressFields.forEach(field => {
+      if (!field.id.includes('building')) {
+        field.setAttribute('required', 'required');
+      }
+    });
+  }
+}
+
+function updateEstimate() {
+  const quantityField = document.querySelector('input[name="formal_order[quantity]"]');
+  const priorityField = document.querySelector('select[name="formal_order[priority]"]');
+  const sampleField = document.querySelector('select[name="formal_order[sample_id]"]');
+  const formulationField = document.querySelector('select[name="formal_order[cosmetic_formulation_id]"]');
+  
+  const quantity = parseInt(quantityField.value) || 100;
+  const priority = priorityField.value || 'normal';
+  
+  // Basic unit prices (these would typically come from the server)
+  let baseUnitPrice = 200; // Default
+  
+  if (currentTab === 'sample' && sampleField.value) {
+    // Sample-based pricing
+    baseUnitPrice = 300; // Sample pricing
+  } else if (currentTab === 'formulation' && formulationField.value) {
+    // Formulation-based pricing
+    baseUnitPrice = 250; // Formulation pricing
+  }
+  
+  // Priority multiplier
+  let priorityMultiplier = 1.0;
+  if (priority === 'high') priorityMultiplier = 1.3;
+  if (priority === 'urgent') priorityMultiplier = 1.8;
+  
+  // Calculate costs
+  const unitPrice = Math.floor(baseUnitPrice * priorityMultiplier);
+  const manufacturingCost = Math.floor(quantity * 50 * priorityMultiplier);
+  
+  let shippingCost = 1000; // Base shipping
+  if (quantity > 500) shippingCost = 3000;
+  else if (quantity > 100) shippingCost = 2000;
+  
+  const totalCost = (unitPrice * quantity) + manufacturingCost + shippingCost;
+  
+  // Update display
+  document.getElementById('unit-price').textContent = '¥' + unitPrice.toLocaleString() + ' / 個';
+  document.getElementById('manufacturing-cost').textContent = '¥' + manufacturingCost.toLocaleString();
+  document.getElementById('shipping-cost').textContent = '¥' + shippingCost.toLocaleString();
+  document.getElementById('total-cost').textContent = '¥' + totalCost.toLocaleString();
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+  toggleAddressForm();
+  updateEstimate();
+  
+  // Add event listeners for estimate updates
+  document.querySelector('input[name="formal_order[quantity]"]').addEventListener('input', updateEstimate);
+  document.querySelector('select[name="formal_order[priority]"]').addEventListener('change', updateEstimate);
+  
+  const sampleSelect = document.querySelector('select[name="formal_order[sample_id]"]');
+  const formulationSelect = document.querySelector('select[name="formal_order[cosmetic_formulation_id]"]');
+  
+  if (sampleSelect) sampleSelect.addEventListener('change', updateEstimate);
+  if (formulationSelect) formulationSelect.addEventListener('change', updateEstimate);
+});
+</script>
+
+<style>
+.page-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 2rem 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 1rem;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.page-description {
+  font-size: 1.125rem;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.form-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.formal-order-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.error-messages {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  color: #991b1b;
+  margin-bottom: 2rem;
+}
+
+.error-messages h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.error-messages ul {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.form-section {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #f1f5f9;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.selected-product .product-card {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 2px solid #0ea5e9;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+}
+
+.product-info h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 0.75rem 0;
+}
+
+.product-meta {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.product-type,
+.skin-type {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.product-price {
+  background: #dcfce7;
+  color: #166534;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.product-description {
+  color: #64748b;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.selection-tabs {
+  display: flex;
+  background: #f8fafc;
+  border-radius: 0.5rem;
+  padding: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: transparent;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn.active {
+  background: white;
+  color: #667eea;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.product-select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-row:last-child {
+  margin-bottom: 0;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.form-label.required::after {
+  content: ' *';
+  color: #ef4444;
+}
+
+.form-control {
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-help {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+}
+
+.address-selection {
+  margin-bottom: 1.5rem;
+}
+
+.radio-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.radio-label {
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+}
+
+.company-address-display {
+  background: #f8fafc;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+}
+
+.address-info h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 1rem 0;
+}
+
+.address-content p {
+  margin: 0 0 0.5rem 0;
+  color: #1e293b;
+  line-height: 1.5;
+}
+
+.address-warning {
+  color: #f59e0b;
+}
+
+.address-form {
+  background: #f8fafc;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+}
+
+.estimate-section {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-color: #0ea5e9;
+}
+
+.estimate-display {
+  background: white;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.estimate-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.estimate-row:last-child {
+  border-bottom: none;
+}
+
+.estimate-row.total {
+  font-weight: 600;
+  font-size: 1.125rem;
+  color: #1e293b;
+  border-top: 2px solid #e2e8f0;
+  padding-top: 1rem;
+  margin-top: 0.5rem;
+}
+
+.estimate-label {
+  color: #64748b;
+}
+
+.estimate-value {
+  color: #059669;
+  font-weight: 600;
+}
+
+.estimate-note {
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  color: #92400e;
+}
+
+.estimate-note p {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 2rem;
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-lg {
+  padding: 1.25rem 2rem;
+  font-size: 1.125rem;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(5, 150, 105, 0.3);
+}
+
+.btn-outline {
+  background: transparent;
+  color: #667eea;
+  border-color: #667eea;
+}
+
+.btn-outline:hover {
+  background: #667eea;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .form-container {
+    padding: 1rem;
+  }
+  
+  .form-section {
+    padding: 1.5rem;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .selection-tabs {
+    flex-direction: column;
+  }
+  
+  .product-meta {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+</style>

@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  resources :formal_orders, only: [:index, :show, :new, :create, :edit, :update, :destroy]
   devise_for :admins, path: 'admin', controllers: {
     sessions: 'admins/sessions',
     registrations: 'admins/registrations'
@@ -19,6 +20,7 @@ Rails.application.routes.draw do
     resources :companies, only: [:index, :show, :edit, :update, :destroy]
     resources :users, only: [:index, :show, :edit, :update, :destroy]
     resources :sample_orders, only: [:index, :show, :edit, :update, :destroy]
+    resources :formal_orders, only: [:index, :show, :edit, :update, :destroy]
     resources :formulations, only: [:index, :show, :destroy]
   end
 

@@ -1,0 +1,55 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  company: one
+  cosmetic_formulation: one
+  sample: one
+  quantity: 1
+  status: 1
+  priority: 1
+  contact_name: MyString
+  contact_phone: MyString
+  delivery_address: MyText
+  delivery_postal_code: MyString
+  delivery_prefecture: MyString
+  delivery_city: MyString
+  delivery_street: MyString
+  delivery_building: MyString
+  use_company_address: false
+  notes: MyText
+  shipping_cost: 9.99
+  manufacturing_cost: 9.99
+  unit_price: 9.99
+  total_cost: 9.99
+  estimated_delivery_date: 2025-09-05
+  shipped_at: 2025-09-05 11:15:23
+  delivered_at: 2025-09-05 11:15:23
+  tracking_number: MyString
+
+two:
+  user: two
+  company: two
+  cosmetic_formulation: two
+  sample: two
+  quantity: 1
+  status: 1
+  priority: 1
+  contact_name: MyString
+  contact_phone: MyString
+  delivery_address: MyText
+  delivery_postal_code: MyString
+  delivery_prefecture: MyString
+  delivery_city: MyString
+  delivery_street: MyString
+  delivery_building: MyString
+  use_company_address: false
+  notes: MyText
+  shipping_cost: 9.99
+  manufacturing_cost: 9.99
+  unit_price: 9.99
+  total_cost: 9.99
+  estimated_delivery_date: 2025-09-05
+  shipped_at: 2025-09-05 11:15:23
+  delivered_at: 2025-09-05 11:15:23
+  tracking_number: MyString

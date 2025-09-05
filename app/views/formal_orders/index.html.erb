@@ -1,0 +1,585 @@
+<div class="page-header">
+  <h1 class="page-title">📋 正式発注一覧</h1>
+  <p class="page-description">大量発注・本格製造のご依頼</p>
+</div>
+
+<!-- Stats Dashboard -->
+<div class="stats-container">
+  <div class="stat-card">
+    <div class="stat-value"><%= @stats[:total] %></div>
+    <div class="stat-label">総発注数</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value"><%= @stats[:pending_quote] %></div>
+    <div class="stat-label">見積もり待ち</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value"><%= @stats[:pending_approval] %></div>
+    <div class="stat-label">承認待ち</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value"><%= @stats[:in_progress] %></div>
+    <div class="stat-label">製造中</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value"><%= @stats[:completed] %></div>
+    <div class="stat-label">完了済み</div>
+  </div>
+</div>
+
+<!-- Filters and Search -->
+<div class="filters-section">
+  <%= form_with url: formal_orders_path, method: :get, local: true, class: "filters-form" do |f| %>
+    <div class="filter-group">
+      <%= f.text_field :search, placeholder: "商品名、担当者名で検索", value: params[:search], class: "search-input" %>
+      <button type="submit" class="search-btn">🔍</button>
+    </div>
+    
+    <div class="filter-group">
+      <%= f.select :status, options_for_select([['全て', 'all']] + FormalOrder::STATUSES, params[:status]), 
+                  { prompt: 'ステータス' }, { class: 'filter-select' } %>
+    </div>
+    
+    <div class="filter-group">
+      <%= f.select :priority, options_for_select([['全て', 'all']] + FormalOrder::PRIORITIES, params[:priority]), 
+                  { prompt: '優先度' }, { class: 'filter-select' } %>
+    </div>
+    
+    <div class="filter-actions">
+      <%= link_to "リセット", formal_orders_path, class: "btn btn-outline" %>
+      <%= link_to "新規発注", new_formal_order_path, class: "btn btn-primary" %>
+    </div>
+  <% end %>
+</div>
+
+<!-- Orders List -->
+<div class="orders-container">
+  <% if @formal_orders.any? %>
+    <div class="orders-grid">
+      <% @formal_orders.each do |order| %>
+        <div class="order-card">
+          <div class="order-header">
+            <div class="order-id">
+              <%= link_to "##{order.id}", order, class: "order-link" %>
+            </div>
+            <div class="order-date">
+              <%= order.created_at.strftime("%m/%d") %>
+            </div>
+          </div>
+          
+          <div class="order-content">
+            <h3 class="product-name">
+              <%= order.product_name %>
+            </h3>
+            
+            <div class="product-details">
+              <span class="product-type-badge">
+                <%= order.product_type_name %>
+              </span>
+              <span class="quantity-info">
+                <%= order.quantity %>個
+              </span>
+            </div>
+            
+            <div class="order-meta">
+              <div class="status-section">
+                <span class="status-badge <%= 
+                  case order.status
+                  when 'quote_pending' then 'status-warning'
+                  when 'quote_approval_pending' then 'status-info' 
+                  when 'confirmed', 'manufacturing', 'quality_check', 'preparing_shipment' then 'status-progress'
+                  when 'shipped', 'delivered' then 'status-success'
+                  when 'cancelled' then 'status-danger'
+                  else 'status-info'
+                  end
+                %>">
+                  <%= order.status_name %>
+                </span>
+              </div>
+              
+              <div class="priority-section">
+                <span class="priority-badge priority-<%= order.priority %>">
+                  <%= order.priority_name %>
+                </span>
+              </div>
+            </div>
+            
+            <div class="cost-info">
+              <% if order.total_cost.present? %>
+                <span class="cost-label">見積金額:</span>
+                <span class="cost-value">¥<%= order.total_cost.to_s(:delimited) %></span>
+              <% else %>
+                <span class="cost-label">見積金額:</span>
+                <span class="cost-pending">算出中</span>
+              <% end %>
+            </div>
+            
+            <% if order.estimated_completion_date %>
+              <div class="delivery-info">
+                <span class="delivery-label">予定完成日:</span>
+                <span class="delivery-date">
+                  <%= order.estimated_completion_date.strftime("%Y年%m月%d日") %>
+                </span>
+              </div>
+            <% end %>
+          </div>
+          
+          <div class="order-actions">
+            <%= link_to "詳細", order, class: "btn btn-sm btn-outline" %>
+            <% if order.can_cancel? %>
+              <%= link_to "編集", edit_formal_order_path(order), class: "btn btn-sm btn-outline" %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+    
+    <!-- Pagination -->
+    <div class="pagination-container">
+      <%= paginate @formal_orders %>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <h3>正式発注はまだありません</h3>
+      <p class="empty-message">
+        大量発注や本格的な製造をご希望の場合は、こちらから正式発注をご依頼ください。
+      </p>
+      <%= link_to "新規正式発注", new_formal_order_path, class: "btn btn-primary btn-lg" %>
+    </div>
+  <% end %>
+</div>
+
+<style>
+.page-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 2rem 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 1rem;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.page-description {
+  font-size: 1.125rem;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #f1f5f9;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.filters-section {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #f1f5f9;
+}
+
+.filters-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 200px;
+}
+
+.filter-group:first-child {
+  flex: 2;
+  min-width: 300px;
+}
+
+.search-input,
+.filter-select {
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+}
+
+.search-input {
+  padding-right: 3rem;
+}
+
+.search-btn {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+.filter-group:first-child {
+  position: relative;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.orders-container {
+  min-height: 400px;
+}
+
+.orders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.order-card {
+  background: white;
+  border-radius: 0.75rem;
+  border: 1px solid #f1f5f9;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.order-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  border-color: #667eea;
+}
+
+.order-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.order-id {
+  font-weight: 600;
+  font-size: 1.125rem;
+}
+
+.order-link {
+  color: #667eea;
+  text-decoration: none;
+  font-family: 'SF Mono', Monaco, monospace;
+}
+
+.order-link:hover {
+  text-decoration: underline;
+}
+
+.order-date {
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.order-content {
+  padding: 1.5rem;
+}
+
+.product-name {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 1rem 0;
+  line-height: 1.4;
+}
+
+.product-details {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.product-type-badge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.quantity-info {
+  background: #f0f9ff;
+  color: #0369a1;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.order-meta {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.status-badge {
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.status-warning {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.status-info {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.status-progress {
+  background-color: #e0e7ff;
+  color: #5b21b6;
+}
+
+.status-success {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.status-danger {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.priority-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.priority-normal {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.priority-high {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.priority-urgent {
+  background-color: #fee2e2;
+  color: #991b1b;
+  font-weight: 600;
+}
+
+.cost-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.cost-label {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.cost-value {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #059669;
+}
+
+.cost-pending {
+  font-size: 0.875rem;
+  color: #f59e0b;
+  font-style: italic;
+}
+
+.delivery-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-top: 1px solid #f1f5f9;
+  margin-bottom: 1rem;
+}
+
+.delivery-label {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.delivery-date {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.order-actions {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  background: #f8fafc;
+  border-top: 1px solid #f1f5f9;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+}
+
+.btn-lg {
+  padding: 1rem 2rem;
+  font-size: 1.125rem;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-outline {
+  background: transparent;
+  color: #667eea;
+  border-color: #667eea;
+}
+
+.btn-outline:hover {
+  background: #667eea;
+  color: white;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 0.75rem;
+  border: 1px solid #f1f5f9;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 0.5rem 0;
+}
+
+.empty-message {
+  color: #6b7280;
+  margin: 0 0 2rem 0;
+  line-height: 1.6;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0;
+}
+
+@media (max-width: 768px) {
+  .orders-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .filters-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filter-group {
+    min-width: auto;
+  }
+  
+  .filter-actions {
+    margin-left: 0;
+    justify-content: center;
+  }
+  
+  .stats-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .order-meta {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .order-actions {
+    flex-direction: column;
+  }
+}
+</style>

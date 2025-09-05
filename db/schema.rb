@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2025_09_05_004924) do
+ActiveRecord::Schema.define(version: 2025_09_05_021523) do
 
   create_table "admins", force: :cascade do |t|
     t.string "email", default: "", null: false
@@ -52,6 +52,40 @@ ActiveRecord::Schema.define(version: 2025_09_05_004924) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["user_id"], name: "index_cosmetic_formulations_on_user_id"
+  end
+
+  create_table "formal_orders", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "company_id"
+    t.integer "cosmetic_formulation_id"
+    t.integer "sample_id"
+    t.integer "quantity"
+    t.integer "status"
+    t.integer "priority"
+    t.string "contact_name"
+    t.string "contact_phone"
+    t.text "delivery_address"
+    t.string "delivery_postal_code"
+    t.string "delivery_prefecture"
+    t.string "delivery_city"
+    t.string "delivery_street"
+    t.string "delivery_building"
+    t.boolean "use_company_address"
+    t.text "notes"
+    t.decimal "shipping_cost"
+    t.decimal "manufacturing_cost"
+    t.decimal "unit_price"
+    t.decimal "total_cost"
+    t.date "estimated_delivery_date"
+    t.datetime "shipped_at"
+    t.datetime "delivered_at"
+    t.string "tracking_number"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["company_id"], name: "index_formal_orders_on_company_id"
+    t.index ["cosmetic_formulation_id"], name: "index_formal_orders_on_cosmetic_formulation_id"
+    t.index ["sample_id"], name: "index_formal_orders_on_sample_id"
+    t.index ["user_id"], name: "index_formal_orders_on_user_id"
   end
 
   create_table "sample_orders", force: :cascade do |t|
@@ -117,6 +151,10 @@ ActiveRecord::Schema.define(version: 2025_09_05_004924) do
   end
 
   add_foreign_key "cosmetic_formulations", "users"
+  add_foreign_key "formal_orders", "companies"
+  add_foreign_key "formal_orders", "cosmetic_formulations"
+  add_foreign_key "formal_orders", "samples"
+  add_foreign_key "formal_orders", "users"
   add_foreign_key "sample_orders", "companies"
   add_foreign_key "sample_orders", "cosmetic_formulations"
   add_foreign_key "sample_orders", "samples"

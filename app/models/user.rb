@@ -20,6 +20,7 @@ class User < ApplicationRecord
   has_many :cosmetic_formulations, dependent: :destroy
   has_many :created_companies, class_name: 'Company', foreign_key: 'created_by', dependent: :nullify
   has_many :sample_orders, dependent: :destroy
+  has_many :formal_orders, dependent: :destroy
   
   ROLES = [
     ['管理者', 'admin'],

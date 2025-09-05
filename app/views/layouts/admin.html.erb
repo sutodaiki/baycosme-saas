@@ -28,22 +28,14 @@
           
           <li class="menu-item">
             <%= link_to admin_companies_path, class: "menu-link #{'active' if controller_name == 'companies'}" do %>
-              <span class="menu-icon">🏢</span>
-              <span class="menu-text">クライアント企業</span>
+              <span class="menu-text">企業一覧</span>
             <% end %>
-          </li>
-          
-          <li class="menu-item">
-            <%= link_to admin_users_path, class: "menu-link #{'active' if controller_name == 'users'}" do %>
-              <span class="menu-icon">👥</span>
-              <span class="menu-text">ユーザー管理</span>
-            <% end %>
-          </li>
+          </li>                  
           
           <li class="menu-item">
             <%= link_to admin_sample_orders_path, class: "menu-link #{'active' if controller_name == 'sample_orders'}" do %>
               <span class="menu-icon">🧪</span>
-              <span class="menu-text">サンプル注文</span>
+              <span class="menu-text">サンプル注文管理</span>
             <% end %>
           </li>
           
