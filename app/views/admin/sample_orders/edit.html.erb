@@ -1,0 +1,438 @@
+<div class="page-header">
+  <div class="header-left">
+    <h1 class="page-title">✏️ サンプル注文編集 #<%= @sample_order.id %></h1>
+    <nav class="breadcrumb">
+      <%= link_to "← 注文詳細", admin_sample_order_path(@sample_order), class: "breadcrumb-link" %>
+      <span class="breadcrumb-separator">|</span>
+      <%= link_to "注文一覧", admin_sample_orders_path, class: "breadcrumb-link" %>
+    </nav>
+  </div>
+</div>
+
+<div class="edit-form-container">
+  <%= form_with model: [:admin, @sample_order], local: true, class: "edit-form" do |f| %>
+    <% if @sample_order.errors.any? %>
+      <div class="error-messages">
+        <h4>入力エラーがあります:</h4>
+        <ul>
+          <% @sample_order.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <!-- 基本情報 -->
+    <div class="form-section">
+      <h3 class="section-title">基本情報</h3>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <%= f.label :status, "ステータス", class: "form-label" %>
+          <%= f.select :status, 
+              options_from_collection_for_select(SampleOrder::STATUSES.map { |name, value| OpenStruct.new(name: name, value: value) }, :value, :name, @sample_order.status), 
+              {}, { class: "form-control" } %>
+        </div>
+        
+        <div class="form-group">
+          <%= f.label :priority, "優先度", class: "form-label" %>
+          <%= f.select :priority, 
+              options_from_collection_for_select(SampleOrder::PRIORITIES.map { |name, value| OpenStruct.new(name: name, value: value) }, :value, :name, @sample_order.priority), 
+              {}, { class: "form-control" } %>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <%= f.label :quantity, "数量", class: "form-label" %>
+          <%= f.number_field :quantity, min: 1, max: 100, class: "form-control" %>
+        </div>
+        
+        <div class="form-group">
+          <%= f.label :tracking_number, "追跡番号", class: "form-label" %>
+          <%= f.text_field :tracking_number, class: "form-control", placeholder: "発送時に入力" %>
+        </div>
+      </div>
+    </div>
+
+    <!-- 連絡先情報 -->
+    <div class="form-section">
+      <h3 class="section-title">連絡先情報</h3>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <%= f.label :contact_name, "連絡先氏名", class: "form-label" %>
+          <%= f.text_field :contact_name, class: "form-control" %>
+        </div>
+        
+        <div class="form-group">
+          <%= f.label :contact_phone, "電話番号", class: "form-label" %>
+          <%= f.text_field :contact_phone, class: "form-control" %>
+        </div>
+      </div>
+    </div>
+
+    <!-- 配送先情報 -->
+    <div class="form-section">
+      <h3 class="section-title">配送先情報</h3>
+      
+      <div class="form-group">
+        <%= f.label :delivery_address, "配送先住所", class: "form-label" %>
+        <%= f.text_area :delivery_address, rows: 4, class: "form-control", 
+            placeholder: "〒123-4567\n東京都渋谷区○○ 1-2-3\nマンション名 101号室" %>
+        <small class="form-help">会社住所を使用している場合は空欄のままでも構いません</small>
+      </div>
+    </div>
+
+    <!-- 配送日程 -->
+    <div class="form-section">
+      <h3 class="section-title">配送日程</h3>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <%= f.label :shipped_at, "発送日時", class: "form-label" %>
+          <%= f.datetime_local_field :shipped_at, 
+              value: (@sample_order.shipped_at&.strftime('%Y-%m-%dT%H:%M')), 
+              class: "form-control" %>
+        </div>
+        
+        <div class="form-group">
+          <%= f.label :delivered_at, "配達日時", class: "form-label" %>
+          <%= f.datetime_local_field :delivered_at, 
+              value: (@sample_order.delivered_at&.strftime('%Y-%m-%dT%H:%M')), 
+              class: "form-control" %>
+        </div>
+      </div>
+    </div>
+
+    <!-- 備考・メモ -->
+    <div class="form-section">
+      <h3 class="section-title">備考・内部メモ</h3>
+      
+      <div class="form-group">
+        <%= f.label :notes, "備考・要望", class: "form-label" %>
+        <%= f.text_area :notes, rows: 4, class: "form-control", 
+            placeholder: "顧客からの要望や内部メモを記入してください" %>
+        <small class="form-help">最大1000文字まで</small>
+      </div>
+    </div>
+
+    <!-- 現在の商品情報（読み取り専用） -->
+    <div class="form-section readonly-section">
+      <h3 class="section-title">商品情報（参考）</h3>
+      
+      <div class="readonly-content">
+        <% if @sample_order.sample %>
+          <div class="product-info">
+            <h4 class="product-name"><%= @sample_order.sample.name %></h4>
+            <div class="product-details">
+              <span class="product-type"><%= @sample_order.sample.product_type %></span>
+              <span class="product-price"><%= @sample_order.sample.display_price %></span>
+            </div>
+            <p class="product-description"><%= @sample_order.sample.description %></p>
+          </div>
+        <% elsif @sample_order.cosmetic_formulation %>
+          <div class="product-info">
+            <h4 class="product-name"><%= @sample_order.cosmetic_formulation.product_name %></h4>
+            <div class="product-details">
+              <span class="product-type"><%= @sample_order.cosmetic_formulation.product_type_name %></span>
+              <span class="product-skin-type"><%= @sample_order.cosmetic_formulation.skin_type_name %></span>
+            </div>
+          </div>
+        <% else %>
+          <div class="product-info">
+            <h4 class="product-name">カスタムサンプル</h4>
+            <p class="product-description">詳細な商品情報は設定されていません</p>
+          </div>
+        <% end %>
+        
+        <div class="cost-info">
+          <span class="cost-label">見積金額:</span>
+          <span class="cost-value">¥<%= @sample_order.total_cost.to_s(:delimited) %></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 送信ボタン -->
+    <div class="form-actions">
+      <%= f.submit "更新する", class: "btn btn-primary btn-lg" %>
+      <%= link_to "キャンセル", admin_sample_order_path(@sample_order), class: "btn btn-outline btn-lg" %>
+    </div>
+  <% end %>
+</div>
+
+<style>
+.page-header {
+  margin-bottom: 2rem;
+}
+
+.header-left h1 {
+  margin-bottom: 0.5rem;
+}
+
+.breadcrumb {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.breadcrumb-link {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.breadcrumb-link:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb-separator {
+  margin: 0 0.5rem;
+  color: #cbd5e1;
+}
+
+.edit-form-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.error-messages {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  color: #991b1b;
+}
+
+.error-messages h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.error-messages ul {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.form-section {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #f1f5f9;
+}
+
+.readonly-section {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-row:last-child {
+  margin-bottom: 0;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.form-control {
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-help {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+}
+
+.readonly-content {
+  background: white;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+}
+
+.product-info {
+  margin-bottom: 1.5rem;
+}
+
+.product-name {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 0.5rem 0;
+}
+
+.product-details {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.product-type,
+.product-skin-type {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.product-price {
+  background: #dcfce7;
+  color: #166534;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.product-description {
+  color: #64748b;
+  margin: 0.5rem 0 0 0;
+  line-height: 1.5;
+}
+
+.cost-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: #f0f9ff;
+  border-radius: 0.5rem;
+  border-left: 4px solid #0ea5e9;
+}
+
+.cost-label {
+  font-weight: 500;
+  color: #0c4a6e;
+}
+
+.cost-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #059669;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 2rem;
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-lg {
+  padding: 1.25rem 2rem;
+  font-size: 1.125rem;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(5, 150, 105, 0.3);
+}
+
+.btn-outline {
+  background: transparent;
+  color: #667eea;
+  border-color: #667eea;
+}
+
+.btn-outline:hover {
+  background: #667eea;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .edit-form-container {
+    padding: 1rem;
+  }
+  
+  .form-section {
+    padding: 1.5rem;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .product-details {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .cost-info {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+}
+</style>
